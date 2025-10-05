@@ -11,6 +11,7 @@ import {
 } from '@angular/core';
 import { Coordinate, Edge, Tile } from './mapTypes';
 import { calculateCenter, drawEdge, drawTile, shouldDraw } from './drawHelper';
+import { DisplayPosition } from './displayPosition';
 
 @Component({
   selector: 'mapuu',
@@ -21,8 +22,7 @@ import { calculateCenter, drawEdge, drawTile, shouldDraw } from './drawHelper';
 export class MapComponent implements AfterViewInit {
   private parent = inject(ElementRef<HTMLElement>);
   private canvas = viewChild.required<ElementRef<HTMLCanvasElement>>('canvas');
-  public offset = model.required<Coordinate>();
-  public zoom = model.required<number>();
+  public displayPosition = model.required<DisplayPosition>();
   public tiles = input.required<Tile[]>();
   public edges = input.required<Edge[]>();
 
@@ -59,15 +59,20 @@ export class MapComponent implements AfterViewInit {
     }
 
     const mousePosition = Coordinate.fromMouseEvent(event);
-    const diff = mousePosition.sub(this.panOrigin);
-    this.offset.update((o) => o.add(diff));
+    this.displayPosition.update((dp) => dp.pan(this.panOrigin!, mousePosition));
     this.panOrigin = mousePosition;
   }
 
   @HostListener('wheel', ['$event'])
   public onMouseWheel(event: WheelEvent) {
-    this.zoom.update((z) => z * (1.0 - 0.002 * event.deltaY));
-    //console.log('zoom', this.zoom());
+    const mousePosition = Coordinate.fromMouseEvent(event);
+    this.displayPosition.update((dp) =>
+      dp.modifyZoom(
+        mousePosition,
+        this.getSize(),
+        Math.min(2.0, Math.max(0.5, 1.0 - 0.002 * event.deltaY)),
+      ),
+    );
     event.preventDefault();
   }
 
@@ -76,17 +81,19 @@ export class MapComponent implements AfterViewInit {
   private render() {
     this.doRender(
       this.canvas().nativeElement,
-      this.offset(),
-      this.zoom(),
+      this.displayPosition(),
       this.tiles(),
       this.edges(),
     );
   }
 
+  private getSize(): Coordinate {
+    return Coordinate.fromElementSize(this.parent.nativeElement);
+  }
+
   private doRender(
     canvas: HTMLCanvasElement,
-    offset: Coordinate,
-    zoom: number,
+    displayPosition: DisplayPosition,
     tiles: Tile[],
     edges: Edge[],
   ) {
@@ -96,36 +103,23 @@ export class MapComponent implements AfterViewInit {
       return;
     }
 
-    const width = this.parent.nativeElement.clientWidth;
-    const height = this.parent.nativeElement.clientHeight;
+    const size = this.getSize();
 
-    canvas.width = width;
-    canvas.height = height;
-    ctx.clearRect(0, 0, width, height);
+    canvas.width = size.x;
+    canvas.height = size.y;
+    ctx.clearRect(0, 0, size.x, size.y);
 
     for (const tile of tiles) {
-      const center = calculateCenter(
-        width,
-        height,
-        offset,
-        tile.coordinate,
-        zoom,
-      );
-      if (shouldDraw(width, height, center, zoom)) {
-        drawTile(ctx, tile, center, zoom);
+      const center = calculateCenter(size, displayPosition, tile.coordinate);
+      if (shouldDraw(size, center, displayPosition.zoom)) {
+        drawTile(ctx, tile, center, displayPosition.zoom);
       }
     }
 
     for (const edge of edges) {
-      const center = calculateCenter(
-        width,
-        height,
-        offset,
-        edge.coordinate,
-        zoom,
-      );
-      if (shouldDraw(width, height, center, zoom)) {
-        drawEdge(ctx, edge, center, zoom);
+      const center = calculateCenter(size, displayPosition, edge.coordinate);
+      if (shouldDraw(size, center, displayPosition.zoom)) {
+        drawEdge(ctx, edge, center, displayPosition.zoom);
       }
     }
   }

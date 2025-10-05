@@ -1,3 +1,4 @@
+import { DisplayPosition } from './displayPosition';
 import { Coordinate, Edge, Tile, tileColors } from './mapTypes';
 
 const sqr3Half = Math.sqrt(3) / 2;
@@ -77,32 +78,29 @@ export function drawEdge(
 }
 
 export function calculateCenter(
-  width: number,
-  height: number,
-  offset: Coordinate,
+  size: Coordinate,
+  displayPosition: DisplayPosition,
   coord: Coordinate,
-  zoom: number,
 ): Coordinate {
   return new Coordinate(
     (coord.x * 2 - (Math.abs(coord.y) % 2)) * sqr3Half,
     coord.y * 1.5,
   )
-    .mul(zoom)
-    .add(offset)
-    .add(new Coordinate(width / 2, height / 2));
+    .mul(displayPosition.zoom)
+    .add(displayPosition.offset)
+    .add(size.div(2));
 }
 
 export function shouldDraw(
-  width: number,
-  height: number,
+  size: Coordinate,
   center: Coordinate,
   radius: number,
 ): boolean {
   const w = radius * sqr3Half;
   return (
     center.x > -w &&
-    center.x < width + w &&
+    center.x < size.x + w &&
     center.y > -radius &&
-    center.y < height + radius
+    center.y < size.y + radius
   );
 }

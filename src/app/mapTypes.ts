@@ -10,12 +10,16 @@ export type TileType =
 
 export class Coordinate {
   constructor(
-    public x: number,
-    public y: number,
+    public readonly x: number,
+    public readonly y: number,
   ) {}
 
   public static fromMouseEvent(event: MouseEvent): Coordinate {
     return new Coordinate(event.clientX, event.clientY);
+  }
+
+  public static fromElementSize(element: HTMLElement): Coordinate {
+    return new Coordinate(element.clientWidth, element.clientHeight);
   }
 
   public clone(): Coordinate {
@@ -32,6 +36,10 @@ export class Coordinate {
 
   public mul(value: number): Coordinate {
     return new Coordinate(this.x * value, this.y * value);
+  }
+
+  public div(value: number): Coordinate {
+    return new Coordinate(this.x / value, this.y / value);
   }
 }
 
