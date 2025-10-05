@@ -14,6 +14,14 @@ export class Coordinate {
     public y: number,
   ) {}
 
+  public static fromMouseEvent(event: MouseEvent): Coordinate {
+    return new Coordinate(event.clientX, event.clientY);
+  }
+
+  public clone(): Coordinate {
+    return new Coordinate(this.x, this.y);
+  }
+
   public add(rhs: Coordinate): Coordinate {
     return new Coordinate(this.x + rhs.x, this.y + rhs.y);
   }

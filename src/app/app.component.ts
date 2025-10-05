@@ -11,7 +11,6 @@ import { MapComponent } from './map.component';
   styleUrl: './app.component.scss',
 })
 export class AppComponent {
-  public title = 'Dorfromantik Helper';
   public offset = signal(new Coordinate(0, 0));
   public zoom = signal(100);
   public tiles = signal<Tile[]>([

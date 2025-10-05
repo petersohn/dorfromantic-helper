@@ -26,6 +26,8 @@ export class MapComponent implements AfterViewInit {
   public tiles = input.required<Tile[]>();
   public edges = input.required<Edge[]>();
 
+  private panOrigin: Coordinate | null = null;
+
   constructor() {
     effect(() => this.render());
   }
@@ -33,6 +35,40 @@ export class MapComponent implements AfterViewInit {
   @HostListener('window:resize', [])
   public onResize() {
     this.render();
+  }
+
+  @HostListener('mousedown', ['$event'])
+  public onMouseDown(event: MouseEvent) {
+    this.panOrigin = Coordinate.fromMouseEvent(event);
+  }
+
+  @HostListener('mouseup', [])
+  public onMouseUp() {
+    this.panOrigin = null;
+  }
+
+  @HostListener('mouseout', [])
+  public onMouseOut() {
+    this.panOrigin = null;
+  }
+
+  @HostListener('mousemove', ['$event'])
+  public onMouseMove(event: MouseEvent) {
+    if (!this.panOrigin) {
+      return;
+    }
+
+    const mousePosition = Coordinate.fromMouseEvent(event);
+    const diff = mousePosition.sub(this.panOrigin);
+    this.offset.update((o) => o.add(diff));
+    this.panOrigin = mousePosition;
+  }
+
+  @HostListener('wheel', ['$event'])
+  public onMouseWheel(event: WheelEvent) {
+    this.zoom.update((z) => z * (1.0 - 0.002 * event.deltaY));
+    //console.log('zoom', this.zoom());
+    event.preventDefault();
   }
 
   public ngAfterViewInit(): void {}
