@@ -1,0 +1,9 @@
+#main-view {
+  display: flex;
+
+  mapuu {
+    width: 100%;
+    height: calc(100vh - 16px);
+    display: block;
+  }
+}
