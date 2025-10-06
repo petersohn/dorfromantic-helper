@@ -1,5 +1,5 @@
 import { DisplayPosition } from './displayPosition';
-import { Coordinate, Edge, Tile, tileColors } from './mapTypes';
+import { Coordinate, Edge, Item, Tile, tileColors } from './mapTypes';
 
 const sqr3Half = Math.sqrt(3) / 2;
 
@@ -30,8 +30,8 @@ export function drawTile(
   radius: number,
 ): void {
   const vertices = getVertices(center, radius);
-  for (let i = 0; i < tile.items.length; ++i) {
-    ctx.fillStyle = tileColors[tile.items[i]];
+  for (let i = 0; i < 6; ++i) {
+    ctx.fillStyle = tileColors[tile.getItem(i)];
     ctx.beginPath();
     ctx.moveTo(center.x, center.y);
     ctx.lineTo(vertices[i].x, vertices[i].y);

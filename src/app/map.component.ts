@@ -3,28 +3,27 @@ import {
   Component,
   ElementRef,
   inject,
-  input,
   viewChild,
   effect,
-  model,
   HostListener,
+  ChangeDetectionStrategy,
 } from '@angular/core';
-import { Coordinate, Edge, Tile } from './mapTypes';
+import { Coordinate, Edge, Item, Tile } from './mapTypes';
 import { calculateCenter, drawEdge, drawTile, shouldDraw } from './drawHelper';
 import { DisplayPosition } from './displayPosition';
+import { MapService } from './map.service';
 
 @Component({
   selector: 'mapuu',
   standalone: true,
   templateUrl: './map.component.html',
   styleUrl: './map.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MapComponent implements AfterViewInit {
   private parent = inject(ElementRef<HTMLElement>);
   private canvas = viewChild.required<ElementRef<HTMLCanvasElement>>('canvas');
-  public displayPosition = model.required<DisplayPosition>();
-  public tiles = input.required<Tile[]>();
-  public edges = input.required<Edge[]>();
+  private mapService = inject(MapService);
 
   private panOrigin: Coordinate | null = null;
 
@@ -59,14 +58,16 @@ export class MapComponent implements AfterViewInit {
     }
 
     const mousePosition = Coordinate.fromMouseEvent(event);
-    this.displayPosition.update((dp) => dp.pan(this.panOrigin!, mousePosition));
+    this.mapService.displayPosition.update((dp) =>
+      dp.pan(this.panOrigin!, mousePosition),
+    );
     this.panOrigin = mousePosition;
   }
 
   @HostListener('wheel', ['$event'])
   public onMouseWheel(event: WheelEvent) {
     const mousePosition = Coordinate.fromMouseEvent(event);
-    this.displayPosition.update((dp) =>
+    this.mapService.displayPosition.update((dp) =>
       dp.modifyZoom(
         mousePosition,
         this.getSize(),
@@ -81,9 +82,9 @@ export class MapComponent implements AfterViewInit {
   private render() {
     this.doRender(
       this.canvas().nativeElement,
-      this.displayPosition(),
-      this.tiles(),
-      this.edges(),
+      this.mapService.displayPosition(),
+      this.mapService.tiles(),
+      this.mapService.edges(),
     );
   }
 
@@ -94,8 +95,8 @@ export class MapComponent implements AfterViewInit {
   private doRender(
     canvas: HTMLCanvasElement,
     displayPosition: DisplayPosition,
-    tiles: Tile[],
-    edges: Edge[],
+    tiles: Item<Tile>[],
+    edges: Item<Edge>[],
   ) {
     const ctx = canvas.getContext('2d');
     if (!ctx) {
@@ -112,14 +113,14 @@ export class MapComponent implements AfterViewInit {
     for (const tile of tiles) {
       const center = calculateCenter(size, displayPosition, tile.coordinate);
       if (shouldDraw(size, center, displayPosition.zoom)) {
-        drawTile(ctx, tile, center, displayPosition.zoom);
+        drawTile(ctx, tile.item, center, displayPosition.zoom);
       }
     }
 
     for (const edge of edges) {
       const center = calculateCenter(size, displayPosition, edge.coordinate);
       if (shouldDraw(size, center, displayPosition.zoom)) {
-        drawEdge(ctx, edge, center, displayPosition.zoom);
+        drawEdge(ctx, edge.item, center, displayPosition.zoom);
       }
     }
   }
