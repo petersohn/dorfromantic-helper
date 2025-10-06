@@ -1,9 +1,16 @@
 #main-view {
   display: flex;
+  height: calc(100vh - 16px);
 
   mapuu {
     width: 100%;
-    height: calc(100vh - 16px);
+    height: 100%;
     display: block;
+  }
+
+  sidebar {
+    height: 100%;
+    width: 350px;
+    overflow-y: auto;
   }
 }

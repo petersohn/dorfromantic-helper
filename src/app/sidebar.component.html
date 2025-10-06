@@ -1,0 +1,30 @@
+<div class="controls">
+  @for (key of tileKeys(); track key) {
+    @if (tileTypes[key].normal || tileTypes[key].fill) {
+      <div>
+        {{ key }}
+      </div>
+      @if (tileTypes[key].normal) {
+        <button
+          class="add-item"
+          (click)="addTile(key)"
+          [ngStyle]="{ 'background-color': getColor(key) }"
+        >
+          Add
+        </button>
+      } @else {
+        <div class="add-item"></div>
+      }
+      @if (tileTypes[key].fill) {
+        <button
+          (click)="fillTile(key)"
+          [ngStyle]="{ 'background-color': getColor(key) }"
+        >
+          Fill
+        </button>
+      } @else {
+        <div class="add-item"></div>
+      }
+    }
+  }
+</div>

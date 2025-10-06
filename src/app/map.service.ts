@@ -20,6 +20,10 @@ interface Match {
 
 @Injectable()
 export class MapService {
+  constructor() {
+    this.updateTiles();
+  }
+
   private matchMap: Match[] = [
     {
       from: 'River',
@@ -45,20 +49,16 @@ export class MapService {
     new DisplayPosition(new Coordinate(0, 0), 100),
   );
 
-  private tiles_ = signal<Item<Tile>[]>([
-    {
-      coordinate: new Coordinate(0, 0),
-      item: new Tile([
-        'Grassland',
-        'Grassland',
-        'Grassland',
-        'Grassland',
-        'Grassland',
-        'Grassland',
-      ]),
-    },
+  private tiles_ = signal<Item<Tile>[]>([]);
+  private tileMap = new Map<string, Item<Tile>>([
+    [
+      '0,0',
+      {
+        coordinate: new Coordinate(0, 0),
+        item: Tile.singleTile('Grassland'),
+      },
+    ],
   ]);
-  private tileMap = new Map<string, Item<Tile>>();
   private history: string[] = [];
 
   public tiles = computed(() => this.tiles_());
@@ -167,8 +167,13 @@ export class MapService {
           edge = newEdge;
         }
       }
+
+      if (edge) {
+        result.push({ coordinate, item: edge });
+      }
     }
 
+    console.log(result);
     return result;
   }
 

@@ -40,14 +40,23 @@ export class Coordinate {
   }
 
   public neighbors(): Coordinate[] {
-    return [
-      new Coordinate(this.x + 1, this.y - 1),
-      new Coordinate(this.x + 1, this.y),
-      new Coordinate(this.x + 1, this.y + 1),
-      new Coordinate(this.x, this.y + 1),
-      new Coordinate(this.x - 1, this.y),
-      new Coordinate(this.x, this.y - 1),
-    ];
+    return this.y % 2 == 0
+      ? [
+          new Coordinate(this.x + 1, this.y - 1),
+          new Coordinate(this.x + 1, this.y),
+          new Coordinate(this.x + 1, this.y + 1),
+          new Coordinate(this.x, this.y + 1),
+          new Coordinate(this.x - 1, this.y),
+          new Coordinate(this.x, this.y - 1),
+        ]
+      : [
+          new Coordinate(this.x, this.y - 1),
+          new Coordinate(this.x + 1, this.y),
+          new Coordinate(this.x, this.y + 1),
+          new Coordinate(this.x - 1, this.y + 1),
+          new Coordinate(this.x - 1, this.y),
+          new Coordinate(this.x - 1, this.y - 1),
+        ];
   }
 }
 
@@ -65,19 +74,29 @@ export class Tile {
     }
   }
 
+  public static singleTile(type: TileType): Tile {
+    const items: TileType[] = [];
+    for (let i = 0; i < 6; ++i) {
+      items.push(type);
+    }
+    return new Tile(items);
+  }
+
   public getItem(id: number): TileType {
     return this.items[id];
   }
 
   public isComplete(): boolean {
-    return this.items.length === 6;
+    return !this.items.some((i) => i === 'Unknown');
   }
 
-  public add(tile: TileType): Tile {
-    if (this.isComplete()) {
-      throw new Error('Already complete');
+  public add(tile: TileType, position: number): Tile {
+    if (position < 0 || position >= 6) {
+      throw new Error('Bad position');
     }
-    return new Tile([...this.items, tile]);
+    const items = [...this.items];
+    items[position] = tile;
+    return new Tile(items);
   }
 
   public rotate(amount: number): Tile {
@@ -109,7 +128,7 @@ export interface Item<T> {
   item: T;
 }
 
-export const tileColors = {
+export const tileColors: { [key in TileType]: string } = {
   Unknown: '#aaa',
   Grassland: '#91d63e',
   Forest: '#1f771a',
