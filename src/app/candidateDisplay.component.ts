@@ -6,7 +6,7 @@ import {
   effect,
   HostListener,
   ChangeDetectionStrategy,
-  input,
+  model,
 } from '@angular/core';
 import { Coordinate, Tile } from './mapTypes';
 import { drawTile, hexagonEdgeMidpoints } from './drawHelper';
@@ -22,11 +22,18 @@ import { MapService } from './map.service';
 export class CandidateDisplayComponent {
   private canvas = viewChild.required<ElementRef<HTMLCanvasElement>>('canvas');
   private mapService = inject(MapService);
-  public addPosition = input.required<number>();
+  public addPosition = model.required<number>();
   private readonly points = hexagonEdgeMidpoints().map((c) => c.mul(100));
 
   constructor() {
     effect(() => this.render());
+  }
+
+  @HostListener('wheel', ['$event'])
+  public onMouseWheel(event: WheelEvent) {
+    const amount = event.deltaY > 0 ? 1 : -1;
+    this.mapService.candidate.update((c) => c.rotate(amount));
+    this.addPosition.update((x) => (x + amount) % this.points.length);
   }
 
   private render() {

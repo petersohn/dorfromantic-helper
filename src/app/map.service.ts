@@ -181,7 +181,6 @@ export class MapService {
       }
     }
 
-    console.log(result);
     return result;
   }
 
