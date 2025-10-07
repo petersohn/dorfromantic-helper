@@ -38,7 +38,15 @@ export class MapService {
       to: 'WaterStation',
     },
     {
+      from: 'Lake',
+      to: 'Grassland',
+    },
+    {
       from: 'Railway',
+      to: 'WaterStation',
+    },
+    {
+      from: 'Grassland',
       to: 'WaterStation',
     },
   ];

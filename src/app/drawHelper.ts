@@ -1,5 +1,5 @@
 import { DisplayPosition } from './displayPosition';
-import { Coordinate, Edge, Item, Tile, tileColors } from './mapTypes';
+import { Coordinate, Edge, Tile, tileColors } from './mapTypes';
 
 const sqr3Half = Math.sqrt(3) / 2;
 
@@ -103,4 +103,15 @@ export function shouldDraw(
     center.y > -radius &&
     center.y < size.y + radius
   );
+}
+
+export function hexagonEdgeMidpoints(): Coordinate[] {
+  return [
+    new Coordinate(sqr3Half / 2, -0.75),
+    new Coordinate(sqr3Half, 0),
+    new Coordinate(sqr3Half / 2, 0.75),
+    new Coordinate(-sqr3Half / 2, 0.75),
+    new Coordinate(-sqr3Half, 0),
+    new Coordinate(-sqr3Half / 2, -0.75),
+  ];
 }

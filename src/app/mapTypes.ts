@@ -23,6 +23,10 @@ export class Coordinate {
     return new Coordinate(element.clientWidth, element.clientHeight);
   }
 
+  public static fromCanvasSize(canvas: HTMLCanvasElement): Coordinate {
+    return new Coordinate(canvas.width, canvas.height);
+  }
+
   public add(rhs: Coordinate): Coordinate {
     return new Coordinate(this.x + rhs.x, this.y + rhs.y);
   }

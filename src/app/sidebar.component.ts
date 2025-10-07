@@ -7,11 +7,12 @@ import {
 import { MapService } from './map.service';
 import { Tile, tileColors, TileType } from './mapTypes';
 import { NgStyle } from '@angular/common';
+import { CandidateDisplayComponent } from './candidateDisplay.component';
 
 @Component({
   selector: 'sidebar',
   standalone: true,
-  imports: [NgStyle],
+  imports: [NgStyle, CandidateDisplayComponent],
   templateUrl: './sidebar.component.html',
   styleUrl: './sidebar.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

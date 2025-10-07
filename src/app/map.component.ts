@@ -20,7 +20,7 @@ import { MapService } from './map.service';
   styleUrl: './map.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class MapComponent implements AfterViewInit {
+export class MapComponent {
   private parent = inject(ElementRef<HTMLElement>);
   private canvas = viewChild.required<ElementRef<HTMLCanvasElement>>('canvas');
   private mapService = inject(MapService);
@@ -76,8 +76,6 @@ export class MapComponent implements AfterViewInit {
     );
     event.preventDefault();
   }
-
-  public ngAfterViewInit(): void {}
 
   private render() {
     this.doRender(
