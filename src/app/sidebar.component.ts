@@ -44,7 +44,10 @@ export class SidebarComponent {
   }
 
   public addTile(type: TileType) {
-    this.mapService.candidate.update((c) => c.add(type, this.addPosition()));
+    this.mapService.candidate.update((c) => {
+      const result = this.tileTypes[c.getItem(0)].normal ? c : new Tile();
+      return result.add(type, this.addPosition());
+    });
     this.addPosition.update((p) => (p + 1) % 6);
   }
 
