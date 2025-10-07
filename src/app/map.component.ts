@@ -1,5 +1,4 @@
 import {
-  AfterViewInit,
   Component,
   ElementRef,
   inject,
@@ -7,9 +6,18 @@ import {
   effect,
   HostListener,
   ChangeDetectionStrategy,
+  OnInit,
+  signal,
+  computed,
 } from '@angular/core';
 import { Coordinate, Edge, Item, Tile } from './mapTypes';
-import { calculateCenter, drawEdge, drawTile, shouldDraw } from './drawHelper';
+import {
+  drawEdge,
+  drawTile,
+  shouldDraw,
+  logical2Screen,
+  screen2Logical,
+} from './drawHelper';
 import { DisplayPosition } from './displayPosition';
 import { MapService } from './map.service';
 
@@ -20,15 +28,33 @@ import { MapService } from './map.service';
   styleUrl: './map.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class MapComponent {
+export class MapComponent implements OnInit {
   private parent = inject(ElementRef<HTMLElement>);
   private canvas = viewChild.required<ElementRef<HTMLCanvasElement>>('canvas');
   private mapService = inject(MapService);
+  private candidateShowPosition = signal<Coordinate | null>(null);
+
+  private candidateShow = computed<Item<Tile> | null>(() => {
+    const p = this.candidateShowPosition();
+    const c = this.mapService.candidate();
+    return p && c.isComplete()
+      ? {
+          coordinate: p,
+          item: c,
+        }
+      : null;
+  });
 
   private panOrigin: Coordinate | null = null;
 
   constructor() {
     effect(() => this.render());
+  }
+
+  ngOnInit(): void {
+    this.mapService.displayPosition.update(
+      (p) => new DisplayPosition(this.getSize().div(2), p.zoom),
+    );
   }
 
   @HostListener('window:resize', [])
@@ -38,7 +64,10 @@ export class MapComponent {
 
   @HostListener('mousedown', ['$event'])
   public onMouseDown(event: MouseEvent) {
-    this.panOrigin = Coordinate.fromMouseEvent(event);
+    this.panOrigin = Coordinate.fromMouseEvent(
+      this.parent.nativeElement,
+      event,
+    );
   }
 
   @HostListener('mouseup', [])
@@ -46,18 +75,44 @@ export class MapComponent {
     this.panOrigin = null;
   }
 
+  @HostListener('click', ['$event'])
+  public onClick(event: MouseEvent) {
+    const mousePosition = Coordinate.fromMouseEvent(
+      this.parent.nativeElement,
+      event,
+    );
+    const coord = screen2Logical(
+      this.mapService.displayPosition().physical2Screen(mousePosition),
+    );
+    if (coord && this.mapService.canAddCandidate(coord)) {
+      this.mapService.addCandidate(coord);
+    }
+  }
+
   @HostListener('mouseout', [])
   public onMouseOut() {
     this.panOrigin = null;
+    this.candidateShowPosition.set(null);
   }
 
   @HostListener('mousemove', ['$event'])
   public onMouseMove(event: MouseEvent) {
+    const mousePosition = Coordinate.fromMouseEvent(
+      this.parent.nativeElement,
+      event,
+    );
+
+    const logical = screen2Logical(
+      this.mapService.displayPosition().physical2Screen(mousePosition),
+    );
+    this.candidateShowPosition.set(
+      logical && !this.mapService.getTile(logical) ? logical : null,
+    );
+
     if (!this.panOrigin) {
       return;
     }
 
-    const mousePosition = Coordinate.fromMouseEvent(event);
     this.mapService.displayPosition.update((dp) =>
       dp.pan(this.panOrigin!, mousePosition),
     );
@@ -66,7 +121,15 @@ export class MapComponent {
 
   @HostListener('wheel', ['$event'])
   public onMouseWheel(event: WheelEvent) {
-    const mousePosition = Coordinate.fromMouseEvent(event);
+    if (!!this.candidateShow() && !event.ctrlKey) {
+      this.mapService.rotateCandidate(event.deltaY);
+      return;
+    }
+
+    const mousePosition = Coordinate.fromMouseEvent(
+      this.parent.nativeElement,
+      event,
+    );
     this.mapService.displayPosition.update((dp) =>
       dp.modifyZoom(
         mousePosition,
@@ -83,6 +146,7 @@ export class MapComponent {
       this.mapService.displayPosition(),
       this.mapService.tiles(),
       this.mapService.edges(),
+      this.candidateShow(),
     );
   }
 
@@ -95,6 +159,7 @@ export class MapComponent {
     displayPosition: DisplayPosition,
     tiles: Item<Tile>[],
     edges: Item<Edge>[],
+    candidateShow: Item<Tile> | null,
   ) {
     const ctx = canvas.getContext('2d');
     if (!ctx) {
@@ -109,17 +174,29 @@ export class MapComponent {
     ctx.clearRect(0, 0, size.x, size.y);
 
     for (const tile of tiles) {
-      const center = calculateCenter(size, displayPosition, tile.coordinate);
+      const center = displayPosition.screen2Physical(
+        logical2Screen(tile.coordinate),
+      );
       if (shouldDraw(size, center, displayPosition.zoom)) {
         drawTile(ctx, tile.item, center, displayPosition.zoom);
       }
     }
 
     for (const edge of edges) {
-      const center = calculateCenter(size, displayPosition, edge.coordinate);
+      const center = displayPosition.screen2Physical(
+        logical2Screen(edge.coordinate),
+      );
       if (shouldDraw(size, center, displayPosition.zoom)) {
         drawEdge(ctx, edge.item, center, displayPosition.zoom);
       }
+    }
+
+    if (candidateShow) {
+      const center = displayPosition.screen2Physical(
+        logical2Screen(candidateShow.coordinate),
+      );
+
+      drawTile(ctx, candidateShow.item, center, displayPosition.zoom);
     }
   }
 }

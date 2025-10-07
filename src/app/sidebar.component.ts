@@ -37,8 +37,6 @@ export class SidebarComponent {
     return Object.keys(this.tileTypes) as TileType[];
   }
 
-  public addPosition = signal(0);
-
   public getColor(type: TileType): string {
     return tileColors[type];
   }
@@ -46,13 +44,13 @@ export class SidebarComponent {
   public addTile(type: TileType) {
     this.mapService.candidate.update((c) => {
       const result = this.tileTypes[c.getItem(0)].normal ? c : new Tile();
-      return result.add(type, this.addPosition());
+      return result.add(type, this.mapService.addPosition());
     });
-    this.addPosition.update((p) => (p + 1) % 6);
+    this.mapService.addPosition.update((p) => (p + 1) % 6);
   }
 
   public fillTile(type: TileType) {
     this.mapService.candidate.set(Tile.singleTile(type));
-    this.addPosition.set(0);
+    this.mapService.addPosition.set(0);
   }
 }

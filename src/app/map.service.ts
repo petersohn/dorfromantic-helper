@@ -73,6 +73,7 @@ export class MapService {
   public edges = computed(() => this.getEdges());
 
   public candidate = signal<Tile>(new Tile());
+  public addPosition = signal(0);
 
   public canAddCandidate(coordinate: Coordinate): boolean {
     const c = this.candidate();
@@ -96,6 +97,12 @@ export class MapService {
     this.updateTiles();
   }
 
+  public rotateCandidate(delta: number) {
+    const amount = delta > 0 ? 1 : -1;
+    this.candidate.update((c) => c.rotate(amount));
+    this.addPosition.update((x) => (x + amount + 6) % 6);
+  }
+
   public undo(): void {
     const key = this.history.pop();
     if (!key) {
@@ -109,6 +116,10 @@ export class MapService {
     }
 
     this.updateTiles();
+  }
+
+  public getTile(coordinate: Coordinate): Item<Tile> | null {
+    return this.tileMap.get(tileMapKey(coordinate)) ?? null;
   }
 
   private updateTiles(): void {

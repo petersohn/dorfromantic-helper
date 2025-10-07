@@ -1,15 +1,17 @@
 import { DisplayPosition } from './displayPosition';
 import { Coordinate, Edge, Tile, tileColors } from './mapTypes';
 
-const sqr3Half = Math.sqrt(3) / 2;
+const sqrt3 = Math.sqrt(3);
+const sqrt3Half = sqrt3 / 2;
+const sqrt3Quarter = sqrt3Half / 2;
 
 const vertices: Coordinate[] = [
   new Coordinate(0, -1),
-  new Coordinate(sqr3Half, -0.5),
-  new Coordinate(sqr3Half, 0.5),
+  new Coordinate(sqrt3Half, -0.5),
+  new Coordinate(sqrt3Half, 0.5),
   new Coordinate(0, 1),
-  new Coordinate(-sqr3Half, 0.5),
-  new Coordinate(-sqr3Half, -0.5),
+  new Coordinate(-sqrt3Half, 0.5),
+  new Coordinate(-sqrt3Half, -0.5),
 ];
 
 function getVertices(center: Coordinate, radius: number) {
@@ -77,26 +79,12 @@ export function drawEdge(
   );
 }
 
-export function calculateCenter(
-  size: Coordinate,
-  displayPosition: DisplayPosition,
-  coord: Coordinate,
-): Coordinate {
-  return new Coordinate(
-    (coord.x * 2 - (Math.abs(coord.y) % 2)) * sqr3Half,
-    coord.y * 1.5,
-  )
-    .mul(displayPosition.zoom)
-    .add(displayPosition.offset)
-    .add(size.div(2));
-}
-
 export function shouldDraw(
   size: Coordinate,
   center: Coordinate,
   radius: number,
 ): boolean {
-  const w = radius * sqr3Half;
+  const w = radius * sqrt3Half;
   return (
     center.x > -w &&
     center.x < size.x + w &&
@@ -107,11 +95,32 @@ export function shouldDraw(
 
 export function hexagonEdgeMidpoints(): Coordinate[] {
   return [
-    new Coordinate(sqr3Half / 2, -0.75),
-    new Coordinate(sqr3Half, 0),
-    new Coordinate(sqr3Half / 2, 0.75),
-    new Coordinate(-sqr3Half / 2, 0.75),
-    new Coordinate(-sqr3Half, 0),
-    new Coordinate(-sqr3Half / 2, -0.75),
+    new Coordinate(sqrt3Quarter, -0.75),
+    new Coordinate(sqrt3Half, 0),
+    new Coordinate(sqrt3Quarter, 0.75),
+    new Coordinate(-sqrt3Quarter, 0.75),
+    new Coordinate(-sqrt3Half, 0),
+    new Coordinate(-sqrt3Quarter, -0.75),
   ];
+}
+
+export function screen2Logical(screen: Coordinate): Coordinate | null {
+  const yAdjusted = screen.y + sqrt3Quarter;
+  const y = Math.floor(yAdjusted / 1.5);
+  const withinYSection = yAdjusted - y * 1.5;
+  if (withinYSection > 1) {
+    // This is not yet supported.
+    return null;
+  }
+
+  const xAdjusted = y % 2 == 0 ? screen.x + sqrt3Half : screen.x + sqrt3;
+  const x = Math.floor(xAdjusted / sqrt3);
+  return new Coordinate(x, y);
+}
+
+export function logical2Screen(coord: Coordinate): Coordinate {
+  return new Coordinate(
+    (coord.x * 2 - (Math.abs(coord.y) % 2)) * sqrt3Half,
+    coord.y * 1.5,
+  );
 }

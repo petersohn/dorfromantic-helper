@@ -15,8 +15,14 @@ export class Coordinate {
     public readonly y: number,
   ) {}
 
-  public static fromMouseEvent(event: MouseEvent): Coordinate {
-    return new Coordinate(event.clientX, event.clientY);
+  public static fromMouseEvent(
+    parent: HTMLElement,
+    event: MouseEvent,
+  ): Coordinate {
+    return new Coordinate(
+      event.pageX - parent.offsetLeft,
+      event.pageY - parent.offsetTop,
+    );
   }
 
   public static fromElementSize(element: HTMLElement): Coordinate {

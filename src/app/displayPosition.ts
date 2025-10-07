@@ -16,13 +16,19 @@ export class DisplayPosition {
     size: Coordinate,
     multiplyBy: number,
   ): DisplayPosition {
-    const middle = size.div(2);
     const newZoom = this.zoom * multiplyBy;
     const newOffset = position
-      .sub(middle)
       .mul(this.zoom - newZoom)
       .add(this.offset.mul(newZoom))
       .div(this.zoom);
     return new DisplayPosition(newOffset, newZoom);
+  }
+
+  public physical2Screen(physical: Coordinate): Coordinate {
+    return physical.sub(this.offset).div(this.zoom);
+  }
+
+  public screen2Physical(screen: Coordinate): Coordinate {
+    return screen.mul(this.zoom).add(this.offset);
   }
 }
