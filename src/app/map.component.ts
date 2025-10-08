@@ -53,13 +53,13 @@ export class MapComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.mapService.displayPosition.update(
-      (p) => new DisplayPosition(this.getSize().div(2), p.zoom),
-    );
+    this.mapService.setWindowSize(this.getSize());
+    this.mapService.init();
   }
 
   @HostListener('window:resize', [])
   public onResize() {
+    this.mapService.setWindowSize(this.getSize());
     this.render();
   }
 

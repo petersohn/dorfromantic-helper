@@ -124,6 +124,10 @@ export class Tile {
     }
     return result;
   }
+
+  public serialize(): any {
+    return [...this.items];
+  }
 }
 
 export class Edge {

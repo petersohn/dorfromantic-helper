@@ -52,4 +52,10 @@ export class SidebarComponent {
   public undo() {
     this.mapService.undo();
   }
+
+  public clear() {
+    if (confirm('Really reset the game?')) {
+      this.mapService.reset();
+    }
+  }
 }

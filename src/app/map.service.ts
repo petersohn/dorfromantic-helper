@@ -6,6 +6,7 @@ import {
   Item,
   oppositeDirection,
   Tile,
+  tileColors,
   TileType,
 } from './mapTypes';
 
@@ -58,15 +59,7 @@ export class MapService {
   );
 
   private tiles_ = signal<Item<Tile>[]>([]);
-  private tileMap = new Map<string, Item<Tile>>([
-    [
-      '0,0',
-      {
-        coordinate: new Coordinate(0, 0),
-        item: Tile.singleTile('Grassland'),
-      },
-    ],
-  ]);
+  private tileMap = new Map<string, Item<Tile>>();
   private history: string[] = [];
 
   public tiles = computed(() => this.tiles_());
@@ -74,6 +67,50 @@ export class MapService {
 
   public candidate = signal<Tile>(new Tile());
   public addPosition = signal(0);
+
+  private windowSize: Coordinate | null = null;
+
+  public setWindowSize(size: Coordinate) {
+    this.windowSize = size;
+  }
+
+  public init() {
+    if (!this.windowSize) {
+      throw new Error('Size needs to be set');
+    }
+    const data = window.localStorage.getItem('Game');
+    let loaded = false;
+    if (data) {
+      try {
+        this.deserializeGame(data);
+        loaded = true;
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    if (!loaded) {
+      this.reset();
+    }
+  }
+
+  public reset() {
+    this.tileMap = new Map([
+      [
+        '0,0',
+        {
+          coordinate: new Coordinate(0, 0),
+          item: Tile.singleTile('Grassland'),
+        },
+      ],
+    ]);
+    this.updateTiles();
+    if (this.windowSize) {
+      this.displayPosition.set(
+        new DisplayPosition(this.windowSize.div(2), 100),
+      );
+    }
+  }
 
   public canAddCandidate(coordinate: Coordinate): boolean {
     const c = this.candidate();
@@ -95,6 +132,9 @@ export class MapService {
     this.history.push(key);
     this.candidate.set(new Tile());
     this.updateTiles();
+
+    const data = this.serializeGame();
+    window.localStorage.setItem('Game', data);
   }
 
   public rotateCandidate(delta: number) {
@@ -120,6 +160,63 @@ export class MapService {
 
   public getTile(coordinate: Coordinate): Item<Tile> | null {
     return this.tileMap.get(tileMapKey(coordinate)) ?? null;
+  }
+
+  public serializeGame(): string {
+    const data: any = {
+      offset: this.displayPosition().offset,
+      zoom: this.displayPosition().zoom,
+      tiles: this.tiles().map((t) => ({
+        coordinate: t.coordinate,
+        item: t.item.serialize(),
+      })),
+    };
+    return JSON.stringify(data);
+  }
+
+  public deserializeGame(input: string) {
+    const data = JSON.parse(input);
+    if (
+      typeof data.offset !== 'object' ||
+      typeof data.offset.x !== 'number' ||
+      typeof data.offset.y !== 'number' ||
+      typeof data.zoom !== 'number' ||
+      typeof data.tiles !== 'object'
+    ) {
+      throw new Error('Bad input');
+    }
+
+    const tileMap = new Map<string, Item<Tile>>();
+    for (const tile of data.tiles) {
+      if (
+        typeof tile.coordinate !== 'object' ||
+        typeof tile.coordinate.x !== 'number' ||
+        typeof tile.coordinate.y !== 'number' ||
+        typeof tile.item !== 'object'
+      ) {
+        throw new Error('Bad input');
+      }
+      const items = Array.from(tile.item) as TileType[];
+      for (const item of items) {
+        if (!tileColors[item]) {
+          throw new Error('Bad input');
+        }
+      }
+      const coordinate = new Coordinate(tile.coordinate.x, tile.coordinate.y);
+      tileMap.set(tileMapKey(coordinate), {
+        coordinate,
+        item: new Tile(items),
+      });
+    }
+
+    this.displayPosition.set(
+      new DisplayPosition(
+        new Coordinate(data.offset.x, data.offset.y),
+        data.zoom,
+      ),
+    );
+    this.tileMap = tileMap;
+    this.updateTiles();
   }
 
   private updateTiles(): void {
