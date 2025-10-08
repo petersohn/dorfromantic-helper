@@ -46,6 +46,7 @@ export class MapComponent implements OnInit {
   });
 
   private panOrigin: Coordinate | null = null;
+  private mouseMovedWhileDown: boolean | null = null;
 
   constructor() {
     effect(() => this.render());
@@ -64,6 +65,7 @@ export class MapComponent implements OnInit {
 
   @HostListener('mousedown', ['$event'])
   public onMouseDown(event: MouseEvent) {
+    this.mouseMovedWhileDown = false;
     this.panOrigin = Coordinate.fromMouseEvent(
       this.parent.nativeElement,
       event,
@@ -77,6 +79,12 @@ export class MapComponent implements OnInit {
 
   @HostListener('click', ['$event'])
   public onClick(event: MouseEvent) {
+    const isMoved = this.mouseMovedWhileDown;
+    this.mouseMovedWhileDown = null;
+    if (isMoved) {
+      return;
+    }
+
     const mousePosition = Coordinate.fromMouseEvent(
       this.parent.nativeElement,
       event,
@@ -91,12 +99,17 @@ export class MapComponent implements OnInit {
 
   @HostListener('mouseout', [])
   public onMouseOut() {
+    this.mouseMovedWhileDown = null;
     this.panOrigin = null;
     this.candidateShowPosition.set(null);
   }
 
   @HostListener('mousemove', ['$event'])
   public onMouseMove(event: MouseEvent) {
+    if (this.mouseMovedWhileDown === false) {
+      this.mouseMovedWhileDown = true;
+    }
+
     const mousePosition = Coordinate.fromMouseEvent(
       this.parent.nativeElement,
       event,
