@@ -1,9 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  inject,
-  signal,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { MapService } from './map.service';
 import { Tile, tileColors, TileType } from './mapTypes';
 import { NgStyle } from '@angular/common';
@@ -52,5 +47,9 @@ export class SidebarComponent {
   public fillTile(type: TileType) {
     this.mapService.candidate.set(Tile.singleTile(type));
     this.mapService.addPosition.set(0);
+  }
+
+  public undo() {
+    this.mapService.undo();
   }
 }
