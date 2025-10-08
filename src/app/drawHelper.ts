@@ -106,18 +106,32 @@ export function hexagonEdgeMidpoints(): Coordinate[] {
   ];
 }
 
-export function screen2Logical(screen: Coordinate): Coordinate | null {
+export function screen2Logical(screen: Coordinate): Coordinate {
   const yAdjusted = screen.y + sqrt3Quarter;
   const y = Math.floor(yAdjusted / 1.5);
   const withinYSection = yAdjusted - y * 1.5;
-  if (withinYSection > 1) {
-    // This is not yet supported.
-    return null;
-  }
 
   const xAdjusted = y % 2 == 0 ? screen.x + sqrt3Half : screen.x + sqrt3;
   const x = Math.floor(xAdjusted / sqrt3);
-  return new Coordinate(x, y);
+  if (withinYSection <= 1) {
+    return new Coordinate(x, y);
+  }
+
+  const withinXSection = xAdjusted - x * sqrt3;
+  const withinYSectionBelow = withinYSection - 1;
+  if (withinXSection <= sqrt3Half) {
+    if (withinXSection > withinYSectionBelow * sqrt3) {
+      return new Coordinate(x, y);
+    } else {
+      return new Coordinate(y % 2 == 0 ? x : x - 1, y + 1);
+    }
+  } else {
+    if (withinXSection - sqrt3Half + withinYSectionBelow * sqrt3 < sqrt3Half) {
+      return new Coordinate(x, y);
+    } else {
+      return new Coordinate(y % 2 == 0 ? x + 1 : x, y + 1);
+    }
+  }
 }
 
 export function logical2Screen(coord: Coordinate): Coordinate {

@@ -92,7 +92,7 @@ export class MapComponent implements OnInit {
     const coord = screen2Logical(
       this.mapService.displayPosition().physical2Screen(mousePosition),
     );
-    if (coord && this.mapService.canAddCandidate(coord)) {
+    if (this.mapService.canAddCandidate(coord)) {
       this.mapService.addCandidate(coord);
     }
   }
@@ -115,14 +115,13 @@ export class MapComponent implements OnInit {
       event,
     );
 
-    const logical = screen2Logical(
-      this.mapService.displayPosition().physical2Screen(mousePosition),
-    );
-    this.candidateShowPosition.set(
-      logical && !this.mapService.getTile(logical) ? logical : null,
-    );
-
     if (!this.panOrigin) {
+      const logical = screen2Logical(
+        this.mapService.displayPosition().physical2Screen(mousePosition),
+      );
+      this.candidateShowPosition.set(
+        !this.mapService.getTile(logical) ? logical : null,
+      );
       return;
     }
 
