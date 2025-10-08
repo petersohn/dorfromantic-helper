@@ -144,8 +144,8 @@ export const tileColors: { [key in TileType]: string } = {
   Forest: '#1f771a',
   Field: '#d8d515',
   Town: '#ce5c73',
-  River: '#64c3e0',
-  Lake: '#0d99c4',
+  River: '#0d99c4',
+  Lake: '#64c3e0',
   Railway: '#91632b',
   WaterStation: '#14e8b6',
 };

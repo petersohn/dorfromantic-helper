@@ -48,6 +48,8 @@ export function drawTile(
   ctx.stroke();
 }
 
+const goodValueColors = ['', '#fff', '#fcc', '#f99', '#f66', '#f33', '#f00'];
+
 export function drawEdge(
   ctx: CanvasRenderingContext2D,
   edge: Edge,
@@ -57,7 +59,7 @@ export function drawEdge(
   const vertices = getVertices(center, radius);
   const isGood = edge.good == edge.all;
 
-  ctx.fillStyle = isGood ? '#0a0' : '#f00';
+  ctx.fillStyle = isGood ? '#0d0' : '#faa';
   ctx.beginPath();
   drawOutline(ctx, vertices);
   ctx.fill();
@@ -67,7 +69,7 @@ export function drawEdge(
   drawOutline(ctx, vertices);
   ctx.stroke();
 
-  ctx.fillStyle = 'white';
+  ctx.fillStyle = isGood ? goodValueColors[edge.good] : 'black';
   ctx.font = `${radius / 2}px sans-serif`;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
