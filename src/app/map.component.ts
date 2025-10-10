@@ -202,9 +202,9 @@ export class MapComponent implements OnInit {
         item: e.item,
       }))
       .filter((e) => shouldDraw(size, e.coordinate, displayPosition.zoom));
-    edgesToDraw.sort(
-      (a, b) => (a.item.isGood() ? 1 : 0) - (b.item.isGood() ? 1 : 0),
-    );
+
+    const goodness = (e: Edge) => (!e.isGood() ? 0 : e.good);
+    edgesToDraw.sort((a, b) => goodness(a.item) - goodness(b.item));
 
     for (const edge of edgesToDraw) {
       drawEdge(ctx, edge.item, edge.coordinate, displayPosition.zoom);

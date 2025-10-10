@@ -62,7 +62,7 @@ export function drawEdge(
 
   const color = isGood ? goodValueColors[edge.good] : '#999';
   ctx.strokeStyle = color;
-  ctx.lineWidth = 2;
+  ctx.lineWidth = Math.max(2, radius / 10);
   ctx.beginPath();
   drawOutline(ctx, vertices);
   ctx.stroke();
