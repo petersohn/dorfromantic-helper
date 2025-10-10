@@ -135,6 +135,10 @@ export class Edge {
     public readonly all: number,
     public readonly good: number,
   ) {}
+
+  public isGood(): boolean {
+    return this.good === this.all;
+  }
 }
 
 export interface Item<T> {

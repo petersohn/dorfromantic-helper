@@ -133,12 +133,14 @@ export class MapService {
     this.candidate.set(new Tile());
     this.updateTiles();
 
+    this.addPosition.set(0);
+
     const data = this.serializeGame();
     window.localStorage.setItem('Game', data);
   }
 
   public rotateCandidate(delta: number) {
-    const amount = delta > 0 ? 1 : -1;
+    const amount = delta > 0 ? -1 : 1;
     this.candidate.update((c) => c.rotate(amount));
     this.addPosition.update((x) => (x + amount + 6) % 6);
   }

@@ -43,12 +43,13 @@ export function drawTile(
   }
 
   ctx.strokeStyle = 'black';
+  ctx.lineWidth = 1;
   ctx.beginPath();
   drawOutline(ctx, vertices);
   ctx.stroke();
 }
 
-const goodValueColors = ['', '#fff', '#fcc', '#f99', '#f66', '#f33', '#f00'];
+const goodValueColors = ['', '#000', '#300', '#600', '#900', '#c00', '#f00'];
 
 export function drawEdge(
   ctx: CanvasRenderingContext2D,
@@ -57,27 +58,24 @@ export function drawEdge(
   radius: number,
 ): void {
   const vertices = getVertices(center, radius);
-  const isGood = edge.good == edge.all;
+  const isGood = edge.isGood();
 
-  ctx.fillStyle = isGood ? '#0d0' : '#faa';
-  ctx.beginPath();
-  drawOutline(ctx, vertices);
-  ctx.fill();
-
-  ctx.strokeStyle = 'white';
+  const color = isGood ? goodValueColors[edge.good] : '#999';
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 2;
   ctx.beginPath();
   drawOutline(ctx, vertices);
   ctx.stroke();
 
-  ctx.fillStyle = isGood ? goodValueColors[edge.good] : 'black';
-  ctx.font = `${radius / 2}px sans-serif`;
+  ctx.fillStyle = color;
+  ctx.font = `${radius * 0.65}px sans-serif`;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   ctx.fillText(
     isGood ? `${edge.all}` : `${edge.good}/${edge.all}`,
     center.x,
     center.y,
-    2 * radius,
+    radius * sqrt3,
   );
 }
 

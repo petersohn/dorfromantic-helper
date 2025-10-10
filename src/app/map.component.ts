@@ -194,13 +194,20 @@ export class MapComponent implements OnInit {
       }
     }
 
-    for (const edge of edges) {
-      const center = displayPosition.screen2Physical(
-        logical2Screen(edge.coordinate),
-      );
-      if (shouldDraw(size, center, displayPosition.zoom)) {
-        drawEdge(ctx, edge.item, center, displayPosition.zoom);
-      }
+    const edgesToDraw = edges
+      .map((e) => ({
+        coordinate: displayPosition.screen2Physical(
+          logical2Screen(e.coordinate),
+        ),
+        item: e.item,
+      }))
+      .filter((e) => shouldDraw(size, e.coordinate, displayPosition.zoom));
+    edgesToDraw.sort(
+      (a, b) => (a.item.isGood() ? 1 : 0) - (b.item.isGood() ? 1 : 0),
+    );
+
+    for (const edge of edgesToDraw) {
+      drawEdge(ctx, edge.item, edge.coordinate, displayPosition.zoom);
     }
 
     if (candidateShow) {
@@ -208,7 +215,9 @@ export class MapComponent implements OnInit {
         logical2Screen(candidateShow.coordinate),
       );
 
+      ctx.globalAlpha = 0.7;
       drawTile(ctx, candidateShow.item, center, displayPosition.zoom);
+      ctx.globalAlpha = 1.0;
     }
   }
 }
