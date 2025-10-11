@@ -164,6 +164,7 @@ export class MapComponent implements OnInit {
       this.mapService.tiles(),
       this.mapService.edges(),
       this.candidateShow(),
+      this.mapService.candidate().isComplete(),
     );
   }
 
@@ -177,6 +178,7 @@ export class MapComponent implements OnInit {
     tiles: Item<Tile>[],
     edges: Item<Edge>[],
     candidateShow: Item<Tile> | null,
+    isCandidateComplete: boolean,
   ) {
     const ctx = canvas.getContext('2d');
     if (!ctx) {
@@ -188,7 +190,8 @@ export class MapComponent implements OnInit {
 
     canvas.width = size.x;
     canvas.height = size.y;
-    ctx.clearRect(0, 0, size.x, size.y);
+    ctx.fillStyle = isCandidateComplete ? '#fff' : '#ccc';
+    ctx.fillRect(0, 0, size.x, size.y);
 
     for (const tile of tiles) {
       const center = displayPosition.screen2Physical(

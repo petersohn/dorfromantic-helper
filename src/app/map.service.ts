@@ -157,8 +157,13 @@ export class MapService {
   }
 
   public removeTile(coordinate: Coordinate): void {
-    this.tileMap.delete(tileMapKey(coordinate));
-    this.updateTiles();
+    const key = tileMapKey(coordinate);
+    const tile = this.tileMap.get(key);
+    if (tile) {
+      this.tileMap.delete(key);
+      this.updateTiles();
+      this.candidate.set(tile.item);
+    }
   }
 
   public getTile(coordinate: Coordinate): Item<Tile> | null {
