@@ -92,8 +92,13 @@ export class MapComponent implements OnInit {
     const coord = screen2Logical(
       this.mapService.displayPosition().physical2Screen(mousePosition),
     );
-    if (this.mapService.canAddCandidate(coord)) {
-      this.mapService.addCandidate(coord);
+
+    if (event.shiftKey) {
+      this.mapService.removeTile(coord);
+    } else {
+      if (event.ctrlKey || this.mapService.canAddCandidate(coord)) {
+        this.mapService.addCandidate(coord);
+      }
     }
   }
 

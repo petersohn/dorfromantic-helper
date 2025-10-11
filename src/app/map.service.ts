@@ -124,10 +124,6 @@ export class MapService {
     }
 
     const key = tileMapKey(coordinate);
-    if (!this.getEdge(c, coordinate, 0)) {
-      throw new Error('Cannot put here');
-    }
-
     this.tileMap.set(key, { coordinate, item: c });
     this.history.push(key);
     this.candidate.set(new Tile());
@@ -157,6 +153,11 @@ export class MapService {
       this.candidate.set(last.item);
     }
 
+    this.updateTiles();
+  }
+
+  public removeTile(coordinate: Coordinate): void {
+    this.tileMap.delete(tileMapKey(coordinate));
     this.updateTiles();
   }
 
