@@ -61,6 +61,7 @@ export class MapService {
   private tiles_ = signal<Item<Tile>[]>([]);
   private tileMap = new Map<string, Item<Tile>>();
   private history: string[] = [];
+  private candidateStack: Tile[] = [];
 
   public tiles = computed(() => this.tiles_());
   public edges = computed(() => this.getEdges());
@@ -126,13 +127,11 @@ export class MapService {
     const key = tileMapKey(coordinate);
     this.tileMap.set(key, { coordinate, item: c });
     this.history.push(key);
-    this.candidate.set(new Tile());
+    this.popCandidate();
     this.updateTiles();
 
     this.addPosition.set(0);
-
-    const data = this.serializeGame();
-    window.localStorage.setItem('Game', data);
+    this.saveGame();
   }
 
   public rotateCandidate(delta: number) {
@@ -150,10 +149,11 @@ export class MapService {
     const last = this.tileMap.get(key);
     if (last) {
       this.tileMap.delete(key);
-      this.candidate.set(last.item);
+      this.pushCandidate(last.item);
     }
 
     this.updateTiles();
+    this.saveGame();
   }
 
   public removeTile(coordinate: Coordinate): void {
@@ -162,12 +162,18 @@ export class MapService {
     if (tile) {
       this.tileMap.delete(key);
       this.updateTiles();
-      this.candidate.set(tile.item);
+      this.pushCandidate(tile.item);
     }
+    this.saveGame();
   }
 
   public getTile(coordinate: Coordinate): Item<Tile> | null {
     return this.tileMap.get(tileMapKey(coordinate)) ?? null;
+  }
+
+  public saveGame(): void {
+    const data = this.serializeGame();
+    window.localStorage.setItem('Game', data);
   }
 
   public serializeGame(): string {
@@ -225,6 +231,20 @@ export class MapService {
     );
     this.tileMap = tileMap;
     this.updateTiles();
+  }
+
+  private pushCandidate(tile: Tile): void {
+    this.candidate.update((c) => {
+      if (c.isComplete()) {
+        this.candidateStack.push(c);
+      }
+      return tile;
+    });
+  }
+
+  private popCandidate(): void {
+    const c = this.candidateStack.pop();
+    this.candidate.set(c ?? new Tile());
   }
 
   private updateTiles(): void {
