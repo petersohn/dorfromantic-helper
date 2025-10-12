@@ -45,7 +45,11 @@ export class SidebarComponent {
   }
 
   public fillTile(type: TileType) {
-    this.mapService.candidate.set(Tile.singleTile(type));
+    this.mapService.candidate.update((c) =>
+      !this.tileTypes[type].normal || c.isComplete()
+        ? Tile.singleTile(type)
+        : c.fillUnknown(type),
+    );
     this.mapService.addPosition.set(0);
   }
 

@@ -109,6 +109,10 @@ export class Tile {
     return new Tile(items);
   }
 
+  public fillUnknown(tile: TileType): Tile {
+    return new Tile(this.items.map((t) => (t === 'Unknown' ? tile : t)));
+  }
+
   public rotate(amount: number): Tile {
     let result: TileType[] = [];
     for (let i = 0; i < 6; ++i) {
