@@ -104,7 +104,7 @@ export class MapComponent implements OnInit {
 
   @HostListener('mouseout', [])
   public onMouseOut() {
-    this.mouseMovedWhileDown = null;
+    this.mouseMovedWhileDown = true;
     this.panOrigin = null;
     this.candidateShowPosition.set(null);
   }
