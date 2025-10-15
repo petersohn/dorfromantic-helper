@@ -56,11 +56,18 @@ export function drawEdge(
   edge: Edge,
   center: Coordinate,
   radius: number,
+  hasMark: boolean,
 ): void {
   const vertices = getVertices(center, radius);
   const isGood = edge.isGood();
 
-  const color = isGood ? goodValueColors[edge.good] : '#999';
+  const color = hasMark
+    ? isGood
+      ? '#f00'
+      : '#ff0'
+    : isGood
+      ? goodValueColors[edge.good]
+      : '#999';
   ctx.strokeStyle = color;
   ctx.lineWidth = Math.max(2, radius / 10);
   ctx.beginPath();
@@ -137,4 +144,15 @@ export function logical2Screen(coord: Coordinate): Coordinate {
     (coord.x * 2 - (Math.abs(coord.y) % 2)) * sqrt3Half,
     coord.y * 1.5,
   );
+}
+
+export function drawMark(
+  ctx: CanvasRenderingContext2D,
+  center: Coordinate,
+  radius: number,
+) {
+  const vertices = getVertices(center, radius);
+  ctx.fillStyle = '#faa';
+  drawOutline(ctx, vertices);
+  ctx.fill();
 }

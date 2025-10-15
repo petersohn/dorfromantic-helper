@@ -9,6 +9,7 @@ import {
   tileColors,
   TileType,
 } from './mapTypes';
+import { isCaptureEventType } from '@angular/core/primitives/event-dispatch';
 
 function tileMapKey(c: Coordinate) {
   return `${c.x},${c.y}`;
@@ -25,7 +26,7 @@ export class MapService {
     this.updateTiles();
   }
 
-  private matchMap: Match[] = [
+  private readonly matchMap: Match[] = [
     {
       from: 'River',
       to: 'Lake',
@@ -52,22 +53,26 @@ export class MapService {
     },
   ];
 
-  private onlyMatch: TileType[] = ['River', 'Railway'];
+  private readonly onlyMatch: TileType[] = ['River', 'Railway'];
 
-  public displayPosition = signal<DisplayPosition>(
+  public readonly displayPosition = signal<DisplayPosition>(
     new DisplayPosition(new Coordinate(0, 0), 100),
   );
 
-  private tiles_ = signal<Item<Tile>[]>([]);
   private tileMap = new Map<string, Item<Tile>>();
-  private history: string[] = [];
-  private candidateStack: Tile[] = [];
+  private readonly tiles_ = signal<Item<Tile>[]>([]);
+  public readonly tiles = computed(() => this.tiles_());
+  public readonly edges = computed(() => this.getEdges());
 
-  public tiles = computed(() => this.tiles_());
-  public edges = computed(() => this.getEdges());
+  private history: string[] = [];
 
   public candidate = signal<Tile>(new Tile());
   public addPosition = signal(0);
+  private candidateStack: Tile[] = [];
+
+  private markMap = new Map<string, Coordinate>();
+  private readonly marks_ = signal<Coordinate[]>([]);
+  public readonly marks = computed(() => this.marks_());
 
   private windowSize: Coordinate | null = null;
 
@@ -111,6 +116,9 @@ export class MapService {
         new DisplayPosition(this.windowSize.div(2), 100),
       );
     }
+    this.history = [];
+    this.candidateStack = [];
+    this.markMap = new Map();
   }
 
   public canAddCandidate(coordinate: Coordinate): boolean {
@@ -131,6 +139,8 @@ export class MapService {
     this.updateTiles();
 
     this.addPosition.set(0);
+    this.removeMark_(coordinate);
+
     this.saveGame();
   }
 
@@ -171,6 +181,26 @@ export class MapService {
     return this.tileMap.get(tileMapKey(coordinate)) ?? null;
   }
 
+  public addMark(coord: Coordinate) {
+    const key = tileMapKey(coord);
+    if (this.tileMap.has(key)) {
+      return;
+    }
+    this.markMap.set(key, coord);
+    this.updateMarks();
+    this.saveGame();
+  }
+
+  public removeMark(coord: Coordinate) {
+    if (this.removeMark_(coord)) {
+      this.saveGame();
+    }
+  }
+
+  public hasMark(coord: Coordinate) {
+    return this.markMap.has(tileMapKey(coord));
+  }
+
   public saveGame(): void {
     const data = this.serializeGame();
     window.localStorage.setItem('Game', data);
@@ -184,6 +214,7 @@ export class MapService {
         coordinate: t.coordinate,
         item: t.item.serialize(),
       })),
+      marks: this.marks(),
     };
     return JSON.stringify(data);
   }
@@ -191,9 +222,7 @@ export class MapService {
   public deserializeGame(input: string) {
     const data = JSON.parse(input);
     if (
-      typeof data.offset !== 'object' ||
-      typeof data.offset.x !== 'number' ||
-      typeof data.offset.y !== 'number' ||
+      !this.is_coordinate(data.offset) ||
       typeof data.zoom !== 'number' ||
       typeof data.tiles !== 'object'
     ) {
@@ -203,9 +232,7 @@ export class MapService {
     const tileMap = new Map<string, Item<Tile>>();
     for (const tile of data.tiles) {
       if (
-        typeof tile.coordinate !== 'object' ||
-        typeof tile.coordinate.x !== 'number' ||
-        typeof tile.coordinate.y !== 'number' ||
+        !this.is_coordinate(tile.coordinate) ||
         typeof tile.item !== 'object'
       ) {
         throw new Error('Bad input');
@@ -223,6 +250,16 @@ export class MapService {
       });
     }
 
+    const marks = data.marks ?? [];
+    for (const mark of marks) {
+      if (!this.is_coordinate(mark)) {
+        throw new Error('Bad input');
+      }
+    }
+
+    this.history = [];
+    this.candidateStack = [];
+
     this.displayPosition.set(
       new DisplayPosition(
         new Coordinate(data.offset.x, data.offset.y),
@@ -231,6 +268,29 @@ export class MapService {
     );
     this.tileMap = tileMap;
     this.updateTiles();
+
+    this.markMap = new Map(marks.map((m: Coordinate) => [tileMapKey(m), m]));
+    this.updateMarks();
+  }
+
+  private removeMark_(coord: Coordinate): boolean {
+    if (this.markMap.delete(tileMapKey(coord))) {
+      this.updateMarks();
+      return true;
+    }
+    return false;
+  }
+
+  private is_coordinate(obj: any) {
+    return (
+      typeof obj === 'object' &&
+      typeof obj.x === 'number' &&
+      typeof obj.y === 'number'
+    );
+  }
+
+  private updateMarks() {
+    this.marks_.set(Array.from(this.markMap.values()));
   }
 
   private pushCandidate(tile: Tile): void {
