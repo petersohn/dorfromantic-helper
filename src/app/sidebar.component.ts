@@ -1,4 +1,10 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  inject,
+  viewChild,
+} from '@angular/core';
 import { MapService } from './map.service';
 import { Tile, tileColors, TileType } from './mapTypes';
 import { NgStyle } from '@angular/common';
@@ -14,6 +20,10 @@ import { CandidateDisplayComponent } from './candidateDisplay.component';
 })
 export class SidebarComponent {
   private readonly mapService = inject(MapService);
+  private readonly downloader =
+    viewChild<ElementRef<HTMLAnchorElement>>('downloader');
+  private readonly uploader =
+    viewChild<ElementRef<HTMLInputElement>>('uploader');
   public readonly tileTypes: {
     [key in TileType]: { normal: boolean; fill: boolean };
   } = {
@@ -61,5 +71,37 @@ export class SidebarComponent {
     if (confirm('Really reset the game?')) {
       this.mapService.reset();
     }
+  }
+
+  public export() {
+    const data = this.mapService.serializeGame();
+    const blob = new Blob([data], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+
+    const element = this.downloader()!.nativeElement;
+    if (element.href) {
+      URL.revokeObjectURL(element.href);
+    }
+    element.href = url;
+    element.click();
+  }
+
+  public import() {
+    this.uploader()!.nativeElement.click();
+  }
+
+  public uploaded() {
+    const files = this.uploader()!.nativeElement.files;
+    if (!files || files.length === 0) {
+      return;
+    }
+    const reader = new FileReader();
+    reader.addEventListener('load', (event: ProgressEvent) => {
+      if (event.target) {
+        const data = (event.target as FileReader).result as string;
+        this.mapService.deserializeGame(data);
+      }
+    });
+    reader.readAsText(files[0]);
   }
 }

@@ -37,3 +37,11 @@
   <button (click)="undo()">Undo</button>
   <button (click)="resetGame()">Reset game</button>
 </div>
+
+<div class="menu">
+  <button (click)="export()">Export game</button>
+  <button (click)="import()">Import game</button>
+</div>
+
+<a #downloader hidden download="game.json"></a>
+<input #uploader type="file" accept="application/json" hidden (change)="uploaded()">
