@@ -100,6 +100,10 @@ export class Tile {
     return !this.items.some((i) => i === 'Unknown');
   }
 
+  public isEmpty(): boolean {
+    return this.items.every((i) => i === 'Unknown');
+  }
+
   public add(tile: TileType, position: number): Tile {
     if (position < 0 || position >= 6) {
       throw new Error('Bad position');
@@ -160,4 +164,18 @@ export const tileColors: { [key in TileType]: string } = {
   Lake: '#64c3e0',
   Railway: '#91632b',
   WaterStation: '#14e8b6',
+};
+
+export const tileTypes: {
+  [key in TileType]: { normal: boolean; fill: boolean };
+} = {
+  Unknown: { normal: false, fill: false },
+  Grassland: { normal: true, fill: true },
+  Forest: { normal: true, fill: true },
+  Field: { normal: true, fill: true },
+  Town: { normal: true, fill: true },
+  River: { normal: true, fill: true },
+  Lake: { normal: true, fill: true },
+  Railway: { normal: true, fill: true },
+  WaterStation: { normal: false, fill: true },
 };

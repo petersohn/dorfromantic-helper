@@ -53,13 +53,16 @@ export class CandidateDisplayComponent {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     drawTile(ctx, candidate, new Coordinate(125, 125), 80);
-    const coord = Coordinate.fromCanvasSize(canvas)
-      .div(2)
-      .add(this.points[addPosition % this.points.length]);
 
-    ctx.fillStyle = '#000';
-    ctx.beginPath();
-    ctx.arc(coord.x, coord.y, 5, 0, Math.PI * 2);
-    ctx.fill();
+    if (!candidate.isComplete()) {
+      const coord = Coordinate.fromCanvasSize(canvas)
+        .div(2)
+        .add(this.points[addPosition % this.points.length]);
+
+      ctx.fillStyle = '#000';
+      ctx.beginPath();
+      ctx.arc(coord.x, coord.y, 5, 0, Math.PI * 2);
+      ctx.fill();
+    }
   }
 }

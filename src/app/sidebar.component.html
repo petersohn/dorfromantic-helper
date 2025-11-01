@@ -7,6 +7,7 @@
       @if (tileTypes[key].normal) {
         <button
           class="add-item"
+          [disabled]="!canAddTile()"
           (click)="addTile(key)"
           [ngStyle]="{ 'background-color': getColor(key) }"
         >
@@ -17,6 +18,7 @@
       }
       @if (tileTypes[key].fill) {
         <button
+          [disabled]="!canAddTile()"
           (click)="fillTile(key)"
           [ngStyle]="{ 'background-color': getColor(key) }"
         >
@@ -29,12 +31,17 @@
   }
 </div>
 
+<div class="menu">
+  <button [disabled]="!canUndoTile()" (click)="undoTile()">Undo</button>
+  <button [disabled]="!canClearTile()" (click)="clearTile()">Clear</button>
+</div>
+
 <div class="candidate-container">
   <candidate-display></candidate-display>
 </div>
 
 <div class="menu">
-  <button (click)="undo()">Undo</button>
+  <button (click)="undoPlacement()">Undo placement</button>
   <button (click)="resetGame()">Reset game</button>
 </div>
 

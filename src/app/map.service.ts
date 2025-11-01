@@ -8,6 +8,7 @@ import {
   Tile,
   tileColors,
   TileType,
+  tileTypes,
 } from './mapTypes';
 import { isCaptureEventType } from '@angular/core/primitives/event-dispatch';
 
@@ -65,8 +66,13 @@ export class MapService {
   public readonly edges = computed(() => this.getEdges());
 
   private history: string[] = [];
+  private candidateHistory: { tile: Tile; position: number }[] = [];
 
-  public candidate = signal<Tile>(new Tile());
+  private canUndoTile_ = signal<boolean>(false);
+  public canUndoTile = computed(() => this.canUndoTile_());
+
+  private candidate_ = signal<Tile>(new Tile());
+  public candidate = computed(() => this.candidate_());
   public addPosition = signal(0);
   private candidateStack: Tile[] = [];
 
@@ -140,17 +146,19 @@ export class MapService {
 
     this.addPosition.set(0);
     this.removeMark_(coordinate);
+    this.candidateHistory = [];
+    this.updateCanUndoTile();
 
     this.saveGame();
   }
 
   public rotateCandidate(delta: number) {
     const amount = delta > 0 ? -1 : 1;
-    this.candidate.update((c) => c.rotate(amount));
+    this.candidate_.update((c) => c.rotate(amount));
     this.addPosition.update((x) => (x + amount + 6) % 6);
   }
 
-  public undo(): void {
+  public undoPlacement(): void {
     const key = this.history.pop();
     if (!key) {
       return;
@@ -164,6 +172,17 @@ export class MapService {
 
     this.updateTiles();
     this.saveGame();
+  }
+
+  public undoTile(): void {
+    const data = this.candidateHistory.pop();
+    if (!data) {
+      return;
+    }
+
+    this.candidate_.set(data.tile);
+    this.addPosition.set(data.position);
+    this.updateCanUndoTile();
   }
 
   public removeTile(coordinate: Coordinate): void {
@@ -273,6 +292,41 @@ export class MapService {
     this.updateMarks();
   }
 
+  public addTile(type: TileType) {
+    this.candidate_.update((c) => {
+      const p = this.addPosition();
+      this.candidateHistory.push({ tile: c, position: p });
+      const result = tileTypes[c.getItem(0)].normal ? c : new Tile();
+      return result.add(type, p);
+    });
+    this.addPosition.update((p) => (p + 1) % 6);
+    this.updateCanUndoTile();
+  }
+
+  public fillTile(type: TileType) {
+    this.candidate_.update((c) => {
+      this.candidateHistory.push({ tile: c, position: this.addPosition() });
+      return !tileTypes[type].normal || c.isComplete()
+        ? Tile.singleTile(type)
+        : c.fillUnknown(type);
+    });
+    this.addPosition.set(0);
+    this.updateCanUndoTile();
+  }
+
+  public clearCandidate(): void {
+    this.candidate_.update((c) => {
+      this.candidateHistory.push({ tile: c, position: this.addPosition() });
+      return new Tile();
+    });
+    this.addPosition.set(0);
+    this.updateCanUndoTile();
+  }
+
+  private updateCanUndoTile(): void {
+    this.canUndoTile_.set(this.candidateHistory.length !== 0);
+  }
+
   private removeMark_(coord: Coordinate): boolean {
     if (this.markMap.delete(tileMapKey(coord))) {
       this.updateMarks();
@@ -294,7 +348,7 @@ export class MapService {
   }
 
   private pushCandidate(tile: Tile): void {
-    this.candidate.update((c) => {
+    this.candidate_.update((c) => {
       if (c.isComplete()) {
         this.candidateStack.push(c);
       }
@@ -304,7 +358,7 @@ export class MapService {
 
   private popCandidate(): void {
     const c = this.candidateStack.pop();
-    this.candidate.set(c ?? new Tile());
+    this.candidate_.set(c ?? new Tile());
   }
 
   private updateTiles(): void {
