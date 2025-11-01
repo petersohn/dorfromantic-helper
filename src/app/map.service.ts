@@ -170,6 +170,8 @@ export class MapService {
       this.pushCandidate(last.item);
     }
 
+    this.candidateHistory = [];
+    this.updateCanUndoTile();
     this.updateTiles();
     this.saveGame();
   }
