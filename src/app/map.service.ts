@@ -68,6 +68,9 @@ export class MapService {
   private history: string[] = [];
   private candidateHistory: { tile: Tile; position: number }[] = [];
 
+  private canUndoPlacement_ = signal<boolean>(false);
+  public canUndoPlacement = computed(() => this.canUndoPlacement_());
+
   private canUndoTile_ = signal<boolean>(false);
   public canUndoTile = computed(() => this.canUndoTile_());
 
@@ -125,6 +128,8 @@ export class MapService {
     this.history = [];
     this.candidateStack = [];
     this.markMap = new Map();
+
+    this.updateCanUndoPlacement();
   }
 
   public canAddCandidate(coordinate: Coordinate): boolean {
@@ -143,6 +148,7 @@ export class MapService {
     this.history.push(key);
     this.popCandidate();
     this.updateTiles();
+    this.updateCanUndoPlacement();
 
     this.addPosition.set(0);
     this.removeMark_(coordinate);
@@ -170,6 +176,7 @@ export class MapService {
       this.pushCandidate(last.item);
     }
 
+    this.updateCanUndoPlacement();
     this.candidateHistory = [];
     this.updateCanUndoTile();
     this.updateTiles();
@@ -280,6 +287,7 @@ export class MapService {
 
     this.history = [];
     this.candidateStack = [];
+    this.updateCanUndoPlacement();
 
     this.displayPosition.set(
       new DisplayPosition(
@@ -327,6 +335,10 @@ export class MapService {
 
   private updateCanUndoTile(): void {
     this.canUndoTile_.set(this.candidateHistory.length !== 0);
+  }
+
+  private updateCanUndoPlacement(): void {
+    this.canUndoPlacement_.set(this.history.length !== 0);
   }
 
   private removeMark_(coord: Coordinate): boolean {

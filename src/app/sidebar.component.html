@@ -41,7 +41,7 @@
 </div>
 
 <div class="menu">
-  <button (click)="undoPlacement()">Undo placement</button>
+  <button [disabled]="!canUndoPlacement()" (click)="undoPlacement()">Undo placement</button>
   <button (click)="resetGame()">Reset game</button>
 </div>
 

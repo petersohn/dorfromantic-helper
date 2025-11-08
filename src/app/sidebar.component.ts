@@ -31,7 +31,8 @@ export class SidebarComponent {
     return Object.keys(tileTypes) as TileType[];
   }
 
-  public canUndoTile = computed(() => this.mapService.canUndoTile());
+  public canUndoTile = this.mapService.canUndoTile;
+  public canUndoPlacement = this.mapService.canUndoPlacement;
   public canAddTile = computed(() => !this.mapService.candidate().isComplete());
   public canClearTile = computed(() => !this.mapService.candidate().isEmpty());
 
