@@ -153,7 +153,6 @@ export class MapComponent implements OnInit {
     this.mapService.displayPosition.update((dp) =>
       dp.modifyZoom(
         mousePosition,
-        this.getSize(),
         Math.min(2.0, Math.max(0.5, 1.0 - 0.002 * event.deltaY)),
       ),
     );

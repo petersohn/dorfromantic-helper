@@ -11,12 +11,8 @@ export class DisplayPosition {
     return new DisplayPosition(this.offset.add(diff), this.zoom);
   }
 
-  public modifyZoom(
-    position: Coordinate,
-    size: Coordinate,
-    multiplyBy: number,
-  ): DisplayPosition {
-    const newZoom = this.zoom * multiplyBy;
+  public modifyZoom(position: Coordinate, multiplyBy: number): DisplayPosition {
+    const newZoom = Math.max(10, this.zoom * multiplyBy);
     const newOffset = position
       .mul(this.zoom - newZoom)
       .add(this.offset.mul(newZoom))
