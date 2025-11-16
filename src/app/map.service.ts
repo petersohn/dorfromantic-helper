@@ -130,6 +130,7 @@ export class MapService {
     this.markMap = new Map();
 
     this.updateCanUndoPlacement();
+    this.updateMarks();
   }
 
   public canAddCandidate(coordinate: Coordinate): boolean {
