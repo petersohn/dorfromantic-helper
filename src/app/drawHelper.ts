@@ -63,7 +63,7 @@ export function drawEdge(
 
   const color = hasMark
     ? isGood
-      ? '#f00'
+      ? '#f2a'
       : '#ff0'
     : isGood
       ? goodValueColors[edge.good]
