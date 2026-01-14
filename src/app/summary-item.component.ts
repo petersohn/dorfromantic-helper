@@ -26,9 +26,6 @@ export class SummaryItemComponent {
   public markCount = input.required<number>();
 
   constructor() {
-    effect(() => {
-      console.log(`${this.edgeCount()} -> ${this.markCount()}/${this.count()}`);
-    });
     effect(() => this.render());
   }
 
