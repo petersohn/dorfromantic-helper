@@ -10,9 +10,8 @@ import {
   TileType,
   tileTypes,
 } from './mapTypes';
-import { isCaptureEventType } from '@angular/core/primitives/event-dispatch';
 
-function tileMapKey(c: Coordinate) {
+export function tileMapKey(c: Coordinate) {
   return `${c.x},${c.y}`;
 }
 

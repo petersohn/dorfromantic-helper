@@ -1,7 +1,7 @@
 <canvas #canvas width="40" height="50"></canvas>
 <div class="count" [ngClass]="{ marked: markCount() != 0 }">
   @if (markCount() != 0) {
-    {{ markCount() }} / {{ count() }}
+    {{ markCount() }}/{{ count() }}
   } @else {
     {{ count() }}
   }

@@ -6,11 +6,16 @@ import {
   inject,
   viewChild,
 } from '@angular/core';
-import { MapService } from './map.service';
+import { MapService, tileMapKey } from './map.service';
 import { tileColors, TileType, tileTypes } from './mapTypes';
 import { NgStyle } from '@angular/common';
 import { CandidateDisplayComponent } from './candidateDisplay.component';
 import { SummaryItemComponent } from './summary-item.component';
+
+type SummaryItem = {
+  count: number;
+  marks: number;
+};
 
 @Component({
   selector: 'sidebar',
@@ -101,11 +106,21 @@ export class SidebarComponent {
     reader.readAsText(files[0]);
   }
 
-  private calculateSummary(): number[] {
-    const result = [0, 0, 0, 0, 0, 0];
+  private calculateSummary(): SummaryItem[] {
+    const marks = new Set(this.mapService.marks().map((m) => tileMapKey(m)));
+    console.log(marks);
+    const result: SummaryItem[] = [];
+    for (let i = 0; i < 6; ++i) {
+      result.push({ count: 0, marks: 0 });
+    }
+
     for (const edge of this.mapService.edges()) {
       if (edge.item.isGood()) {
-        ++result[edge.item.all - 1];
+        const item = result[edge.item.all - 1];
+        ++item.count;
+        if (marks.has(tileMapKey(edge.coordinate))) {
+          ++item.marks;
+        }
       }
     }
     return result;

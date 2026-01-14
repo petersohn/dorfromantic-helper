@@ -52,8 +52,8 @@
 
 @if (showSummary()) {
 <div class="summary">
-@for (count of summaryItems(); track $index; let idx = $index) {
-<summary-item [edgeCount]="idx + 1" [count]="count" [markCount]="0">
+@for (item of summaryItems(); track $index; let idx = $index) {
+<summary-item [edgeCount]="idx + 1" [count]="item.count" [markCount]="item.marks">
 </summary-item>
 }
 </div>
