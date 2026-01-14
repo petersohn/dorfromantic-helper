@@ -10,11 +10,12 @@ import { MapService } from './map.service';
 import { tileColors, TileType, tileTypes } from './mapTypes';
 import { NgStyle } from '@angular/common';
 import { CandidateDisplayComponent } from './candidateDisplay.component';
+import { SummaryItemComponent } from './summary-item.component';
 
 @Component({
   selector: 'sidebar',
   standalone: true,
-  imports: [NgStyle, CandidateDisplayComponent],
+  imports: [NgStyle, CandidateDisplayComponent, SummaryItemComponent],
   templateUrl: './sidebar.component.html',
   styleUrl: './sidebar.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -35,6 +36,8 @@ export class SidebarComponent {
   public canUndoPlacement = this.mapService.canUndoPlacement;
   public canAddTile = computed(() => !this.mapService.candidate().isComplete());
   public canClearTile = computed(() => !this.mapService.candidate().isEmpty());
+  public summaryItems = computed(() => this.calculateSummary());
+  public showSummary = computed(() => this.mapService.candidate().isComplete());
 
   public getColor(type: TileType): string {
     return tileColors[type];
@@ -96,5 +99,15 @@ export class SidebarComponent {
       }
     });
     reader.readAsText(files[0]);
+  }
+
+  private calculateSummary(): number[] {
+    const result = [0, 0, 0, 0, 0, 0];
+    for (const edge of this.mapService.edges()) {
+      if (edge.item.isGood()) {
+        ++result[edge.item.all - 1];
+      }
+    }
+    return result;
   }
 }

@@ -19,3 +19,11 @@
   gap: 10px;
   margin: 10px 5px;
 }
+
+.summary {
+  width: 100%;
+  display: flex;
+  flex-direction: row-reverse;
+  justify-content: center;
+  margin-top: 40px;
+}

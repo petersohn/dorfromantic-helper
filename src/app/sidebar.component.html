@@ -50,5 +50,14 @@
   <button (click)="import()">Import game</button>
 </div>
 
+@if (showSummary()) {
+<div class="summary">
+@for (count of summaryItems(); track $index; let idx = $index) {
+<summary-item [edgeCount]="idx + 1" [count]="count" [markCount]="0">
+</summary-item>
+}
+</div>
+}
+
 <a #downloader hidden download="game.json"></a>
 <input #uploader type="file" accept="application/json" hidden (change)="uploaded()">

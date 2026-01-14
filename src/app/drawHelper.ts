@@ -57,6 +57,7 @@ export function drawEdge(
   center: Coordinate,
   radius: number,
   hasMark: boolean,
+  showAll = true,
 ): void {
   const vertices = getVertices(center, radius);
   const isGood = edge.isGood();
@@ -79,7 +80,7 @@ export function drawEdge(
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   ctx.fillText(
-    isGood ? `${edge.all}` : `${edge.good}/${edge.all}`,
+    isGood || !showAll ? `${edge.all}` : `${edge.good}/${edge.all}`,
     center.x,
     center.y,
     radius * sqrt3,
