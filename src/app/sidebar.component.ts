@@ -108,7 +108,6 @@ export class SidebarComponent {
 
   private calculateSummary(): SummaryItem[] {
     const marks = new Set(this.mapService.marks().map((m) => tileMapKey(m)));
-    console.log(marks);
     const result: SummaryItem[] = [];
     for (let i = 0; i < 6; ++i) {
       result.push({ count: 0, marks: 0 });

@@ -151,10 +151,7 @@ export class MapComponent implements OnInit {
       event,
     );
     this.mapService.displayPosition.update((dp) =>
-      dp.modifyZoom(
-        mousePosition,
-        Math.min(2.0, Math.max(0.5, 1.0 - 0.002 * event.deltaY)),
-      ),
+      dp.modifyZoomLevel(mousePosition, event.deltaY > 0 ? -1 : 1),
     );
     event.preventDefault();
   }
@@ -199,8 +196,8 @@ export class MapComponent implements OnInit {
 
     for (const mark of marks) {
       const center = displayPosition.screen2Physical(logical2Screen(mark));
-      if (shouldDraw(size, center, displayPosition.zoom)) {
-        drawMark(ctx, center, displayPosition.zoom);
+      if (shouldDraw(size, center, displayPosition.zoom())) {
+        drawMark(ctx, center, displayPosition.zoom());
       }
     }
 
@@ -208,8 +205,8 @@ export class MapComponent implements OnInit {
       const center = displayPosition.screen2Physical(
         logical2Screen(tile.coordinate),
       );
-      if (shouldDraw(size, center, displayPosition.zoom)) {
-        drawTile(ctx, tile.item, center, displayPosition.zoom);
+      if (shouldDraw(size, center, displayPosition.zoom())) {
+        drawTile(ctx, tile.item, center, displayPosition.zoom());
       }
     }
 
@@ -221,7 +218,7 @@ export class MapComponent implements OnInit {
         ),
         item: e.item,
       }))
-      .filter((e) => shouldDraw(size, e.coordinate, displayPosition.zoom));
+      .filter((e) => shouldDraw(size, e.coordinate, displayPosition.zoom()));
 
     const goodness = (e: Item<Edge> & { hasMark: boolean }) =>
       (!e.item.isGood() ? 0 : e.item.good) + (e.hasMark ? 6 : 0);
@@ -232,7 +229,7 @@ export class MapComponent implements OnInit {
         ctx,
         edge.item,
         edge.coordinate,
-        displayPosition.zoom,
+        displayPosition.zoom(),
         edge.hasMark,
       );
     }
@@ -243,7 +240,7 @@ export class MapComponent implements OnInit {
       );
 
       ctx.globalAlpha = 0.7;
-      drawTile(ctx, candidateShow.item, center, displayPosition.zoom);
+      drawTile(ctx, candidateShow.item, center, displayPosition.zoom());
       ctx.globalAlpha = 1.0;
     }
   }

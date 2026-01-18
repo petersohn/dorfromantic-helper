@@ -56,7 +56,7 @@ export class MapService {
   private readonly onlyMatch: TileType[] = ['River', 'Railway'];
 
   public readonly displayPosition = signal<DisplayPosition>(
-    new DisplayPosition(new Coordinate(0, 0), 100),
+    new DisplayPosition(new Coordinate(0, 0), 0),
   );
 
   private tileMap = new Map<string, Item<Tile>>();
@@ -120,9 +120,7 @@ export class MapService {
     ]);
     this.updateTiles();
     if (this.windowSize) {
-      this.displayPosition.set(
-        new DisplayPosition(this.windowSize.div(2), 100),
-      );
+      this.displayPosition.set(new DisplayPosition(this.windowSize.div(2), 0));
     }
     this.history = [];
     this.candidateStack = [];
@@ -237,7 +235,7 @@ export class MapService {
   public serializeGame(): string {
     const data: any = {
       offset: this.displayPosition().offset,
-      zoom: this.displayPosition().zoom,
+      zoomLevel: this.displayPosition().zoomLevel,
       tiles: this.tiles().map((t) => ({
         coordinate: t.coordinate,
         item: t.item.serialize(),
@@ -251,7 +249,10 @@ export class MapService {
     const data = JSON.parse(input);
     if (
       !this.is_coordinate(data.offset) ||
-      typeof data.zoom !== 'number' ||
+      !(
+        typeof data.zoomLevel === 'number' ||
+        (data.zoomLevel === undefined && typeof data.zoom === 'number')
+      ) ||
       typeof data.tiles !== 'object'
     ) {
       throw new Error('Bad input');
@@ -289,12 +290,12 @@ export class MapService {
     this.candidateStack = [];
     this.updateCanUndoPlacement();
 
-    this.displayPosition.set(
-      new DisplayPosition(
-        new Coordinate(data.offset.x, data.offset.y),
-        data.zoom,
-      ),
-    );
+    const coordinate = new Coordinate(data.offset.x, data.offset.y);
+    if (data.zoomLevel !== undefined) {
+      this.displayPosition.set(new DisplayPosition(coordinate, data.zoomLevel));
+    } else {
+      this.displayPosition.set(DisplayPosition.fromZoom(coordinate, data.zoom));
+    }
     this.tileMap = tileMap;
     this.updateTiles();
 
