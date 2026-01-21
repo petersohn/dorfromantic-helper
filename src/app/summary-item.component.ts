@@ -1,14 +1,18 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  computed,
   effect,
   ElementRef,
+  inject,
   input,
   viewChild,
 } from '@angular/core';
-import { drawEdge } from './drawHelper';
+import { drawEdge, logical2Screen } from './drawHelper';
 import { Coordinate, Edge } from './mapTypes';
 import { CommonModule } from '@angular/common';
+import { MapService } from './map.service';
+import { DisplayPosition } from './displayPosition';
 
 @Component({
   selector: 'summary-item',
@@ -19,14 +23,24 @@ import { CommonModule } from '@angular/common';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SummaryItemComponent {
-  private canvas = viewChild.required<ElementRef<HTMLCanvasElement>>('canvas');
+  private readonly canvas =
+    viewChild.required<ElementRef<HTMLCanvasElement>>('canvas');
+  private readonly mapService = inject(MapService);
 
   public edgeCount = input.required<number>();
-  public count = input.required<number>();
+  public edges = input.required<Coordinate[]>();
+  public count = computed(() => this.edges().length);
   public markCount = input.required<number>();
+
+  private jumpIndex = 0;
 
   constructor() {
     effect(() => this.render());
+    effect(() => {
+      if (this.jumpIndex >= this.count()) {
+        this.jumpIndex = 0;
+      }
+    });
   }
 
   private render() {
@@ -49,5 +63,22 @@ export class SummaryItemComponent {
       false,
       false,
     );
+  }
+
+  public onClick() {
+    const edges = this.edges();
+    if (edges.length === 0) {
+      return;
+    }
+
+    const coord = edges[this.jumpIndex];
+    this.mapService.displayPosition.update((dp) => {
+      const physical = dp.screen2Physical(logical2Screen(coord));
+      return new DisplayPosition(
+        dp.offset.sub(physical).add(this.mapService.getWindowSize().div(2)),
+        dp.zoomLevel,
+      );
+    });
+    this.jumpIndex = (this.jumpIndex + 1) % edges.length;
   }
 }

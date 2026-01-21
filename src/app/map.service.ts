@@ -1,4 +1,4 @@
-import { computed, Injectable, signal } from '@angular/core';
+import { computed, effect, Injectable, signal } from '@angular/core';
 import { DisplayPosition } from './displayPosition';
 import {
   Coordinate,
@@ -86,6 +86,13 @@ export class MapService {
 
   public setWindowSize(size: Coordinate) {
     this.windowSize = size;
+  }
+
+  public getWindowSize(): Coordinate {
+    if (this.windowSize === null) {
+      throw new Error('No window size');
+    }
+    return this.windowSize;
   }
 
   public init() {

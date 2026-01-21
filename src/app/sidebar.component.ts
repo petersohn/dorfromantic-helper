@@ -7,13 +7,13 @@ import {
   viewChild,
 } from '@angular/core';
 import { MapService, tileMapKey } from './map.service';
-import { tileColors, TileType, tileTypes } from './mapTypes';
+import { Coordinate, tileColors, TileType, tileTypes } from './mapTypes';
 import { NgStyle } from '@angular/common';
 import { CandidateDisplayComponent } from './candidateDisplay.component';
 import { SummaryItemComponent } from './summary-item.component';
 
 type SummaryItem = {
-  count: number;
+  edges: Coordinate[];
   marks: number;
 };
 
@@ -110,16 +110,18 @@ export class SidebarComponent {
     const marks = new Set(this.mapService.marks().map((m) => tileMapKey(m)));
     const result: SummaryItem[] = [];
     for (let i = 0; i < 6; ++i) {
-      result.push({ count: 0, marks: 0 });
+      result.push({ edges: [], marks: 0 });
     }
 
     for (const edge of this.mapService.edges()) {
-      if (edge.item.isGood()) {
-        const item = result[edge.item.all - 1];
-        ++item.count;
-        if (marks.has(tileMapKey(edge.coordinate))) {
-          ++item.marks;
-        }
+      if (!edge.item.isGood()) {
+        continue;
+      }
+
+      const item = result[edge.item.all - 1];
+      item.edges.push(edge.coordinate);
+      if (marks.has(tileMapKey(edge.coordinate))) {
+        ++item.marks;
       }
     }
     return result;

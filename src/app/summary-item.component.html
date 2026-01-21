@@ -1,4 +1,4 @@
-<canvas #canvas width="40" height="50"></canvas>
+<canvas #canvas width="40" height="50" (click)="onClick()"></canvas>
 <div class="count" [ngClass]="{ marked: markCount() != 0 }">
   @if (markCount() != 0) {
     {{ markCount() }}/{{ count() }}
