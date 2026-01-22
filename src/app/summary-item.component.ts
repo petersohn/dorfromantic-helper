@@ -32,14 +32,15 @@ export class SummaryItemComponent {
   public count = computed(() => this.edges().length);
   public markCount = input.required<number>();
 
+  private jumpList: Coordinate[] | null = null;
   private jumpIndex = 0;
+  private edgesToSort: Coordinate[] = [];
 
   constructor() {
     effect(() => this.render());
     effect(() => {
-      if (this.jumpIndex >= this.count()) {
-        this.jumpIndex = 0;
-      }
+      this.edgesToSort = this.edges();
+      this.jumpList = null;
     });
   }
 
@@ -66,7 +67,7 @@ export class SummaryItemComponent {
   }
 
   public onClick() {
-    const edges = this.edges();
+    const edges = this.calculateJumpList();
     if (edges.length === 0) {
       return;
     }
@@ -80,5 +81,43 @@ export class SummaryItemComponent {
       );
     });
     this.jumpIndex = (this.jumpIndex + 1) % edges.length;
+  }
+
+  private calculateJumpList(): Coordinate[] {
+    if (this.jumpList !== null) {
+      return this.jumpList;
+    }
+
+    this.jumpList = [];
+    this.jumpIndex = 0;
+
+    type Accumulator = {
+      diff: number;
+      index: number;
+    };
+
+    let coord = this.mapService
+      .displayPosition()
+      .physical2Screen(this.mapService.getWindowSize().div(2));
+    while (this.edgesToSort.length !== 0) {
+      const { index } = this.edgesToSort.reduce(
+        (acc: Accumulator | null, curr: Coordinate, index: number) => {
+          const diff = coord.sub(logical2Screen(curr));
+          const absdiff = Math.abs(diff.x) + Math.abs(diff.y);
+          if (acc === null || absdiff < acc.diff) {
+            return { diff: absdiff, index };
+          } else {
+            return acc;
+          }
+        },
+        null,
+      )!;
+
+      const [best] = this.edgesToSort.splice(index, 1);
+      this.jumpList.push(best);
+      coord = best;
+    }
+
+    return this.jumpList;
   }
 }
