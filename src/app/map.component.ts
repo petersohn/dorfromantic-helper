@@ -10,7 +10,14 @@ import {
   signal,
   computed,
 } from '@angular/core';
-import { Coordinate, Edge, Item, Tile } from './mapTypes';
+import {
+  PhysicalCoordinate,
+  LogicalCoordinate,
+  Edge,
+  LogicalItem,
+  PhysicalItem,
+  Tile,
+} from './mapTypes';
 import {
   drawEdge,
   drawTile,
@@ -33,9 +40,9 @@ export class MapComponent implements OnInit {
   private parent = inject(ElementRef<HTMLElement>);
   private canvas = viewChild.required<ElementRef<HTMLCanvasElement>>('canvas');
   private mapService = inject(MapService);
-  private candidateShowPosition = signal<Coordinate | null>(null);
+  private candidateShowPosition = signal<LogicalCoordinate | null>(null);
 
-  private candidateShow = computed<Item<Tile> | null>(() => {
+  private candidateShow = computed<LogicalItem<Tile> | null>(() => {
     const p = this.candidateShowPosition();
     const c = this.mapService.candidate();
     return p && c.isComplete()
@@ -46,7 +53,7 @@ export class MapComponent implements OnInit {
       : null;
   });
 
-  private panOrigin: Coordinate | null = null;
+  private panOrigin: PhysicalCoordinate | null = null;
   private mouseMovedWhileDown: boolean | null = null;
 
   constructor() {
@@ -67,7 +74,7 @@ export class MapComponent implements OnInit {
   @HostListener('mousedown', ['$event'])
   public onMouseDown(event: MouseEvent) {
     this.mouseMovedWhileDown = false;
-    this.panOrigin = Coordinate.fromMouseEvent(
+    this.panOrigin = PhysicalCoordinate.fromMouseEvent(
       this.parent.nativeElement,
       event,
     );
@@ -82,7 +89,7 @@ export class MapComponent implements OnInit {
       return;
     }
 
-    const mousePosition = Coordinate.fromMouseEvent(
+    const mousePosition = PhysicalCoordinate.fromMouseEvent(
       this.parent.nativeElement,
       event,
     );
@@ -118,7 +125,7 @@ export class MapComponent implements OnInit {
       this.mouseMovedWhileDown = true;
     }
 
-    const mousePosition = Coordinate.fromMouseEvent(
+    const mousePosition = PhysicalCoordinate.fromMouseEvent(
       this.parent.nativeElement,
       event,
     );
@@ -146,7 +153,7 @@ export class MapComponent implements OnInit {
       return;
     }
 
-    const mousePosition = Coordinate.fromMouseEvent(
+    const mousePosition = PhysicalCoordinate.fromMouseEvent(
       this.parent.nativeElement,
       event,
     );
@@ -168,17 +175,17 @@ export class MapComponent implements OnInit {
     );
   }
 
-  private getSize(): Coordinate {
-    return Coordinate.fromElementSize(this.parent.nativeElement);
+  private getSize(): PhysicalCoordinate {
+    return PhysicalCoordinate.fromElementSize(this.parent.nativeElement);
   }
 
   private doRender(
     canvas: HTMLCanvasElement,
     displayPosition: DisplayPosition,
-    tiles: Item<Tile>[],
-    edges: Item<Edge>[],
-    marks: Coordinate[],
-    candidateShow: Item<Tile> | null,
+    tiles: LogicalItem<Tile>[],
+    edges: LogicalItem<Edge>[],
+    marks: LogicalCoordinate[],
+    candidateShow: LogicalItem<Tile> | null,
     isCandidateComplete: boolean,
   ) {
     const ctx = canvas.getContext('2d');
@@ -220,7 +227,7 @@ export class MapComponent implements OnInit {
       }))
       .filter((e) => shouldDraw(size, e.coordinate, displayPosition.zoom()));
 
-    const goodness = (e: Item<Edge> & { hasMark: boolean }) =>
+    const goodness = (e: PhysicalItem<Edge> & { hasMark: boolean }) =>
       (!e.item.isGood() ? 0 : e.item.good) + (e.hasMark ? 6 : 0);
     edgesToDraw.sort((a, b) => goodness(a) - goodness(b));
 

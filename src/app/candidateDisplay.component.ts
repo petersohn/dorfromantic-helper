@@ -7,7 +7,7 @@ import {
   HostListener,
   ChangeDetectionStrategy,
 } from '@angular/core';
-import { Coordinate, Tile } from './mapTypes';
+import { PhysicalCoordinate, Tile } from './mapTypes';
 import { drawTile } from './drawHelper';
 import { MapService } from './map.service';
 
@@ -43,6 +43,6 @@ export class CandidateDisplayComponent {
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    drawTile(ctx, candidate, new Coordinate(125, 125), 80);
+    drawTile(ctx, candidate, new PhysicalCoordinate(125, 125), 80);
   }
 }

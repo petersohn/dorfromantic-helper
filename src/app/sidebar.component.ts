@@ -7,13 +7,13 @@ import {
   viewChild,
 } from '@angular/core';
 import { MapService, tileMapKey } from './map.service';
-import { Coordinate, tileColors, TileType, tileTypes } from './mapTypes';
+import { LogicalCoordinate, tileColors, TileType, tileTypes } from './mapTypes';
 import { NgStyle } from '@angular/common';
 import { CandidateDisplayComponent } from './candidateDisplay.component';
 import { SummaryItemComponent } from './summary-item.component';
 
 type SummaryItem = {
-  edges: Coordinate[];
+  edges: LogicalCoordinate[];
   marks: number;
 };
 

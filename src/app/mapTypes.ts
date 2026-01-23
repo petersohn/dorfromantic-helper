@@ -9,63 +9,67 @@ export type TileType =
   | 'Railway'
   | 'WaterStation';
 
-export class Coordinate {
+export class CoordinateBase {
   constructor(
     public readonly x: number,
     public readonly y: number,
   ) {}
+}
 
+export class PhysicalCoordinate extends CoordinateBase {
   public static fromMouseEvent(
     parent: HTMLElement,
     event: MouseEvent,
-  ): Coordinate {
-    return new Coordinate(
+  ): PhysicalCoordinate {
+    return new PhysicalCoordinate(
       event.pageX - parent.offsetLeft,
       event.pageY - parent.offsetTop,
     );
   }
 
-  public static fromElementSize(element: HTMLElement): Coordinate {
-    return new Coordinate(element.clientWidth, element.clientHeight);
+  public static fromElementSize(element: HTMLElement): PhysicalCoordinate {
+    return new PhysicalCoordinate(element.clientWidth, element.clientHeight);
   }
 
-  public static fromCanvasSize(canvas: HTMLCanvasElement): Coordinate {
-    return new Coordinate(canvas.width, canvas.height);
+  public static fromCanvasSize(canvas: HTMLCanvasElement): PhysicalCoordinate {
+    return new PhysicalCoordinate(canvas.width, canvas.height);
   }
 
-  public add(rhs: Coordinate): Coordinate {
-    return new Coordinate(this.x + rhs.x, this.y + rhs.y);
+  public add(rhs: PhysicalCoordinate): PhysicalCoordinate {
+    return new PhysicalCoordinate(this.x + rhs.x, this.y + rhs.y);
   }
 
-  public sub(rhs: Coordinate): Coordinate {
-    return new Coordinate(this.x - rhs.x, this.y - rhs.y);
+  public sub(rhs: PhysicalCoordinate): PhysicalCoordinate {
+    return new PhysicalCoordinate(this.x - rhs.x, this.y - rhs.y);
   }
 
-  public mul(value: number): Coordinate {
-    return new Coordinate(this.x * value, this.y * value);
+  public mul(value: number): PhysicalCoordinate {
+    return new PhysicalCoordinate(this.x * value, this.y * value);
   }
 
-  public div(value: number): Coordinate {
-    return new Coordinate(this.x / value, this.y / value);
+  public div(value: number): PhysicalCoordinate {
+    return new PhysicalCoordinate(this.x / value, this.y / value);
   }
+}
 
-  public neighbors(): Coordinate[] {
+export class LogicalCoordinate extends CoordinateBase {
+  public neighbors(): LogicalCoordinate[] {
     return this.y % 2 == 0
       ? [
-          new Coordinate(this.x + 1, this.y - 1),
-          new Coordinate(this.x + 1, this.y),
-          new Coordinate(this.x + 1, this.y + 1),
-          new Coordinate(this.x, this.y + 1),
-          new Coordinate(this.x - 1, this.y),
-          new Coordinate(this.x, this.y - 1),
+          new LogicalCoordinate(this.x + 1, this.y - 1),
+          new LogicalCoordinate(this.x + 1, this.y),
+          new LogicalCoordinate(this.x + 1, this.y + 1),
+          new LogicalCoordinate(this.x, this.y + 1),
+          new LogicalCoordinate(this.x - 1, this.y),
+          new LogicalCoordinate(this.x, this.y - 1),
         ]
       : [
-          new Coordinate(this.x, this.y - 1),
-          new Coordinate(this.x + 1, this.y),
-          new Coordinate(this.x, this.y + 1),
-          new Coordinate(this.x - 1, this.y + 1),
-          new Coordinate(this.x - 1, this.y),
-          new Coordinate(this.x - 1, this.y - 1),
+          new LogicalCoordinate(this.x, this.y - 1),
+          new LogicalCoordinate(this.x + 1, this.y),
+          new LogicalCoordinate(this.x, this.y + 1),
+          new LogicalCoordinate(this.x - 1, this.y + 1),
+          new LogicalCoordinate(this.x - 1, this.y),
+          new LogicalCoordinate(this.x - 1, this.y - 1),
         ];
   }
 }
@@ -151,10 +155,13 @@ export class Edge {
   }
 }
 
-export interface Item<T> {
-  coordinate: Coordinate;
+export interface ItemBase<T, CoordinateType> {
+  coordinate: CoordinateType;
   item: T;
 }
+
+export type LogicalItem<T> = ItemBase<T, LogicalCoordinate>;
+export type PhysicalItem<T> = ItemBase<T, PhysicalCoordinate>;
 
 export const tileColors: { [key in TileType]: string } = {
   Unknown: '#aaa',

@@ -1,24 +1,32 @@
-import { DisplayPosition } from './displayPosition';
-import { Coordinate, Edge, Tile, tileColors } from './mapTypes';
+import {
+  PhysicalCoordinate,
+  LogicalCoordinate,
+  Edge,
+  Tile,
+  tileColors,
+} from './mapTypes';
 
 const sqrt3 = Math.sqrt(3);
 const sqrt3Half = sqrt3 / 2;
 const sqrt3Quarter = sqrt3Half / 2;
 
-const vertices: Coordinate[] = [
-  new Coordinate(0, -1),
-  new Coordinate(sqrt3Half, -0.5),
-  new Coordinate(sqrt3Half, 0.5),
-  new Coordinate(0, 1),
-  new Coordinate(-sqrt3Half, 0.5),
-  new Coordinate(-sqrt3Half, -0.5),
+const vertices: PhysicalCoordinate[] = [
+  new PhysicalCoordinate(0, -1),
+  new PhysicalCoordinate(sqrt3Half, -0.5),
+  new PhysicalCoordinate(sqrt3Half, 0.5),
+  new PhysicalCoordinate(0, 1),
+  new PhysicalCoordinate(-sqrt3Half, 0.5),
+  new PhysicalCoordinate(-sqrt3Half, -0.5),
 ];
 
-function getVertices(center: Coordinate, radius: number) {
+function getVertices(center: PhysicalCoordinate, radius: number) {
   return vertices.map((v) => v.mul(radius).add(center));
 }
 
-function drawOutline(ctx: CanvasRenderingContext2D, vertices: Coordinate[]) {
+function drawOutline(
+  ctx: CanvasRenderingContext2D,
+  vertices: PhysicalCoordinate[],
+) {
   const last = vertices[vertices.length - 1];
   ctx.moveTo(last.x, last.y);
   for (const v of vertices) {
@@ -28,7 +36,7 @@ function drawOutline(ctx: CanvasRenderingContext2D, vertices: Coordinate[]) {
 export function drawTile(
   ctx: CanvasRenderingContext2D,
   tile: Tile,
-  center: Coordinate,
+  center: PhysicalCoordinate,
   radius: number,
 ): void {
   const vertices = getVertices(center, radius);
@@ -54,7 +62,7 @@ const goodValueColors = ['', '#000', '#300', '#600', '#900', '#c00', '#f00'];
 export function drawEdge(
   ctx: CanvasRenderingContext2D,
   edge: Edge,
-  center: Coordinate,
+  center: PhysicalCoordinate,
   radius: number,
   hasMark: boolean,
   showAll = true,
@@ -88,8 +96,8 @@ export function drawEdge(
 }
 
 export function shouldDraw(
-  size: Coordinate,
-  center: Coordinate,
+  size: PhysicalCoordinate,
+  center: PhysicalCoordinate,
   radius: number,
 ): boolean {
   const w = radius * sqrt3Half;
@@ -101,18 +109,18 @@ export function shouldDraw(
   );
 }
 
-export function hexagonEdgeMidpoints(): Coordinate[] {
+export function hexagonEdgeMidpoints(): PhysicalCoordinate[] {
   return [
-    new Coordinate(sqrt3Quarter, -0.75),
-    new Coordinate(sqrt3Half, 0),
-    new Coordinate(sqrt3Quarter, 0.75),
-    new Coordinate(-sqrt3Quarter, 0.75),
-    new Coordinate(-sqrt3Half, 0),
-    new Coordinate(-sqrt3Quarter, -0.75),
+    new PhysicalCoordinate(sqrt3Quarter, -0.75),
+    new PhysicalCoordinate(sqrt3Half, 0),
+    new PhysicalCoordinate(sqrt3Quarter, 0.75),
+    new PhysicalCoordinate(-sqrt3Quarter, 0.75),
+    new PhysicalCoordinate(-sqrt3Half, 0),
+    new PhysicalCoordinate(-sqrt3Quarter, -0.75),
   ];
 }
 
-export function screen2Logical(screen: Coordinate): Coordinate {
+export function screen2Logical(screen: PhysicalCoordinate): LogicalCoordinate {
   const yAdjusted = screen.y + sqrt3Quarter;
   const y = Math.floor(yAdjusted / 1.5);
   const withinYSection = yAdjusted - y * 1.5;
@@ -120,28 +128,28 @@ export function screen2Logical(screen: Coordinate): Coordinate {
   const xAdjusted = y % 2 == 0 ? screen.x + sqrt3Half : screen.x + sqrt3;
   const x = Math.floor(xAdjusted / sqrt3);
   if (withinYSection <= 1) {
-    return new Coordinate(x, y);
+    return new LogicalCoordinate(x, y);
   }
 
   const withinXSection = xAdjusted - x * sqrt3;
   const withinYSectionBelow = withinYSection - 1;
   if (withinXSection <= sqrt3Half) {
     if (withinXSection > withinYSectionBelow * sqrt3) {
-      return new Coordinate(x, y);
+      return new LogicalCoordinate(x, y);
     } else {
-      return new Coordinate(y % 2 == 0 ? x : x - 1, y + 1);
+      return new LogicalCoordinate(y % 2 == 0 ? x : x - 1, y + 1);
     }
   } else {
     if (withinXSection - sqrt3Half + withinYSectionBelow * sqrt3 < sqrt3Half) {
-      return new Coordinate(x, y);
+      return new LogicalCoordinate(x, y);
     } else {
-      return new Coordinate(y % 2 == 0 ? x + 1 : x, y + 1);
+      return new LogicalCoordinate(y % 2 == 0 ? x + 1 : x, y + 1);
     }
   }
 }
 
-export function logical2Screen(coord: Coordinate): Coordinate {
-  return new Coordinate(
+export function logical2Screen(coord: LogicalCoordinate): PhysicalCoordinate {
+  return new PhysicalCoordinate(
     (coord.x * 2 - (Math.abs(coord.y) % 2)) * sqrt3Half,
     coord.y * 1.5,
   );
@@ -149,7 +157,7 @@ export function logical2Screen(coord: Coordinate): Coordinate {
 
 export function drawMark(
   ctx: CanvasRenderingContext2D,
-  center: Coordinate,
+  center: PhysicalCoordinate,
   radius: number,
 ) {
   const vertices = getVertices(center, radius);

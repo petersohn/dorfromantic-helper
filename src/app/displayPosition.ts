@@ -1,4 +1,4 @@
-import { Coordinate } from './mapTypes';
+import { PhysicalCoordinate } from './mapTypes';
 
 const zoomLevels = [
   10.0, 12.92, 16.68, 21.51, 27.78, 35.86, 46.33, 59.85, 77.32, 100.0,
@@ -16,11 +16,11 @@ function findZoomLevel(zoom: number): number {
 }
 
 function getNewOffset(
-  offset: Coordinate,
-  zoomPosition: Coordinate,
+  offset: PhysicalCoordinate,
+  zoomPosition: PhysicalCoordinate,
   zoom: number,
   newZoom: number,
-): Coordinate {
+): PhysicalCoordinate {
   return zoomPosition
     .mul(zoom - newZoom)
     .add(offset.mul(newZoom))
@@ -29,21 +29,27 @@ function getNewOffset(
 
 export class DisplayPosition {
   constructor(
-    public readonly offset: Coordinate,
+    public readonly offset: PhysicalCoordinate,
     public readonly zoomLevel: number,
   ) {}
 
-  static fromZoom(offset: Coordinate, zoom: number): DisplayPosition {
+  static fromZoom(offset: PhysicalCoordinate, zoom: number): DisplayPosition {
     const zoomLevel = findZoomLevel(zoom);
     return new DisplayPosition(offset, zoomLevel);
   }
 
-  public pan(origin: Coordinate, position: Coordinate): DisplayPosition {
+  public pan(
+    origin: PhysicalCoordinate,
+    position: PhysicalCoordinate,
+  ): DisplayPosition {
     const diff = position.sub(origin);
     return new DisplayPosition(this.offset.add(diff), this.zoomLevel);
   }
 
-  public modifyZoomLevel(position: Coordinate, diff: number): DisplayPosition {
+  public modifyZoomLevel(
+    position: PhysicalCoordinate,
+    diff: number,
+  ): DisplayPosition {
     const newZoomLevel = this.zoomLevel + diff;
     if (newZoomLevel < 0 || newZoomLevel >= zoomLevels.length) {
       return this;
@@ -54,11 +60,11 @@ export class DisplayPosition {
     return new DisplayPosition(newOffset, newZoomLevel);
   }
 
-  public physical2Screen(physical: Coordinate): Coordinate {
+  public physical2Screen(physical: PhysicalCoordinate): PhysicalCoordinate {
     return physical.sub(this.offset).div(this.zoom());
   }
 
-  public screen2Physical(screen: Coordinate): Coordinate {
+  public screen2Physical(screen: PhysicalCoordinate): PhysicalCoordinate {
     return screen.mul(this.zoom()).add(this.offset);
   }
 

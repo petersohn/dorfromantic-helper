@@ -9,7 +9,7 @@ import {
   viewChild,
 } from '@angular/core';
 import { drawEdge, logical2Screen } from './drawHelper';
-import { Coordinate, Edge } from './mapTypes';
+import { LogicalCoordinate, PhysicalCoordinate, Edge } from './mapTypes';
 import { CommonModule } from '@angular/common';
 import { MapService, tileMapKey } from './map.service';
 import { DisplayPosition } from './displayPosition';
@@ -29,13 +29,13 @@ export class SummaryItemComponent {
   private readonly mapService = inject(MapService);
 
   public edgeCount = input.required<number>();
-  public edges = input.required<Coordinate[]>();
+  public edges = input.required<LogicalCoordinate[]>();
   public count = computed(() => this.edges().length);
   public markCount = input.required<number>();
 
-  private jumpList: Coordinate[] | null = null;
+  private jumpList: LogicalCoordinate[] | null = null;
   private jumpIndex = 0;
-  private edgesToSort: Coordinate[] = [];
+  private edgesToSort: LogicalCoordinate[] = [];
   private edgesHash: number | null = null;
 
   constructor() {
@@ -67,7 +67,7 @@ export class SummaryItemComponent {
     drawEdge(
       ctx,
       new Edge(edgeCount, count == 0 ? 0 : edgeCount),
-      new Coordinate(canvas.width / 2, canvas.height / 2),
+      new PhysicalCoordinate(canvas.width / 2, canvas.height / 2),
       canvas.width / 2,
       false,
       false,
@@ -91,7 +91,7 @@ export class SummaryItemComponent {
     this.jumpIndex = (this.jumpIndex + 1) % edges.length;
   }
 
-  private calculateJumpList(): Coordinate[] {
+  private calculateJumpList(): LogicalCoordinate[] {
     if (this.jumpList !== null) {
       return this.jumpList;
     }
@@ -109,7 +109,7 @@ export class SummaryItemComponent {
       .physical2Screen(this.mapService.getWindowSize().div(2));
     while (this.edgesToSort.length !== 0) {
       const { index } = this.edgesToSort.reduce(
-        (acc: Accumulator | null, curr: Coordinate, index: number) => {
+        (acc: Accumulator | null, curr: LogicalCoordinate, index: number) => {
           const diff = coord.sub(logical2Screen(curr));
           const absdiff = diff.x * diff.x + diff.y * diff.y;
           if (acc === null || absdiff < acc.diff) {

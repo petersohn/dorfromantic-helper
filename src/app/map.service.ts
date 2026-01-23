@@ -1,9 +1,10 @@
 import { computed, Injectable, signal } from '@angular/core';
 import { DisplayPosition } from './displayPosition';
 import {
-  Coordinate,
+  PhysicalCoordinate,
+  LogicalCoordinate,
   Edge,
-  Item,
+  LogicalItem,
   oppositeDirection,
   Tile,
   tileColors,
@@ -11,7 +12,7 @@ import {
   tileTypes,
 } from './mapTypes';
 
-export function tileMapKey(c: Coordinate) {
+export function tileMapKey(c: LogicalCoordinate) {
   return `${c.x},${c.y}`;
 }
 
@@ -56,11 +57,11 @@ export class MapService {
   private readonly onlyMatch: TileType[] = ['River', 'Railway'];
 
   public readonly displayPosition = signal<DisplayPosition>(
-    new DisplayPosition(new Coordinate(0, 0), 0),
+    new DisplayPosition(new PhysicalCoordinate(0, 0), 0),
   );
 
-  private tileMap = new Map<string, Item<Tile>>();
-  private readonly tiles_ = signal<Item<Tile>[]>([]);
+  private tileMap = new Map<string, LogicalItem<Tile>>();
+  private readonly tiles_ = signal<LogicalItem<Tile>[]>([]);
   public readonly tiles = computed(() => this.tiles_());
   public readonly edges = computed(() => this.getEdges());
 
@@ -77,17 +78,17 @@ export class MapService {
   public candidate = computed(() => this.candidate_());
   private candidateStack: Tile[] = [];
 
-  private markMap = new Map<string, Coordinate>();
-  private readonly marks_ = signal<Coordinate[]>([]);
+  private markMap = new Map<string, LogicalCoordinate>();
+  private readonly marks_ = signal<LogicalCoordinate[]>([]);
   public readonly marks = computed(() => this.marks_());
 
-  private windowSize: Coordinate | null = null;
+  private windowSize: PhysicalCoordinate | null = null;
 
-  public setWindowSize(size: Coordinate) {
+  public setWindowSize(size: PhysicalCoordinate) {
     this.windowSize = size;
   }
 
-  public getWindowSize(): Coordinate {
+  public getWindowSize(): PhysicalCoordinate {
     if (this.windowSize === null) {
       throw new Error('No window size');
     }
@@ -119,7 +120,7 @@ export class MapService {
       [
         '0,0',
         {
-          coordinate: new Coordinate(0, 0),
+          coordinate: new LogicalCoordinate(0, 0),
           item: Tile.singleTile('Grassland'),
         },
       ],
@@ -136,12 +137,12 @@ export class MapService {
     this.updateMarks();
   }
 
-  public canAddCandidate(coordinate: Coordinate): boolean {
+  public canAddCandidate(coordinate: LogicalCoordinate): boolean {
     const c = this.candidate();
     return c.isComplete() && !!this.getEdge(c, coordinate, 0);
   }
 
-  public addCandidate(coordinate: Coordinate): void {
+  public addCandidate(coordinate: LogicalCoordinate): void {
     const c = this.candidate();
     if (!c.isComplete()) {
       throw new Error('Not ready');
@@ -195,7 +196,7 @@ export class MapService {
     this.updateCanUndoTile();
   }
 
-  public removeTile(coordinate: Coordinate): void {
+  public removeTile(coordinate: LogicalCoordinate): void {
     const key = tileMapKey(coordinate);
     const tile = this.tileMap.get(key);
     if (tile) {
@@ -206,11 +207,11 @@ export class MapService {
     this.saveGame();
   }
 
-  public getTile(coordinate: Coordinate): Item<Tile> | null {
+  public getTile(coordinate: LogicalCoordinate): LogicalItem<Tile> | null {
     return this.tileMap.get(tileMapKey(coordinate)) ?? null;
   }
 
-  public addMark(coord: Coordinate) {
+  public addMark(coord: LogicalCoordinate) {
     const key = tileMapKey(coord);
     if (this.tileMap.has(key)) {
       return;
@@ -220,13 +221,13 @@ export class MapService {
     this.saveGame();
   }
 
-  public removeMark(coord: Coordinate) {
+  public removeMark(coord: LogicalCoordinate) {
     if (this.removeMark_(coord)) {
       this.saveGame();
     }
   }
 
-  public hasMark(coord: Coordinate) {
+  public hasMark(coord: LogicalCoordinate) {
     return this.markMap.has(tileMapKey(coord));
   }
 
@@ -261,7 +262,7 @@ export class MapService {
       throw new Error('Bad input');
     }
 
-    const tileMap = new Map<string, Item<Tile>>();
+    const tileMap = new Map<string, LogicalItem<Tile>>();
     for (const tile of data.tiles) {
       if (
         !this.is_coordinate(tile.coordinate) ||
@@ -275,7 +276,10 @@ export class MapService {
           throw new Error('Bad input');
         }
       }
-      const coordinate = new Coordinate(tile.coordinate.x, tile.coordinate.y);
+      const coordinate = new LogicalCoordinate(
+        tile.coordinate.x,
+        tile.coordinate.y,
+      );
       tileMap.set(tileMapKey(coordinate), {
         coordinate,
         item: new Tile(items),
@@ -293,7 +297,7 @@ export class MapService {
     this.candidateStack = [];
     this.updateCanUndoPlacement();
 
-    const coordinate = new Coordinate(data.offset.x, data.offset.y);
+    const coordinate = new PhysicalCoordinate(data.offset.x, data.offset.y);
     if (data.zoomLevel !== undefined) {
       this.displayPosition.set(new DisplayPosition(coordinate, data.zoomLevel));
     } else {
@@ -302,7 +306,9 @@ export class MapService {
     this.tileMap = tileMap;
     this.updateTiles();
 
-    this.markMap = new Map(marks.map((m: Coordinate) => [tileMapKey(m), m]));
+    this.markMap = new Map(
+      marks.map((m: LogicalCoordinate) => [tileMapKey(m), m]),
+    );
     this.updateMarks();
   }
 
@@ -346,7 +352,7 @@ export class MapService {
     this.canUndoPlacement_.set(this.history.length !== 0);
   }
 
-  private removeMark_(coord: Coordinate): boolean {
+  private removeMark_(coord: LogicalCoordinate): boolean {
     if (this.markMap.delete(tileMapKey(coord))) {
       this.updateMarks();
       return true;
@@ -386,7 +392,7 @@ export class MapService {
 
   private getEdge(
     candidate: Tile,
-    coordinate: Coordinate,
+    coordinate: LogicalCoordinate,
     rotation: number,
   ): Edge | null {
     const neighbors = coordinate.neighbors();
@@ -416,13 +422,13 @@ export class MapService {
     return null;
   }
 
-  private getEdges(): Item<Edge>[] {
+  private getEdges(): LogicalItem<Edge>[] {
     const candidate = this.candidate();
     if (!candidate.isComplete()) {
       return [];
     }
 
-    const freeCoordinates = new Map<string, Coordinate>();
+    const freeCoordinates = new Map<string, LogicalCoordinate>();
 
     this.tiles_();
     for (const tile of this.tileMap.values()) {
@@ -434,7 +440,7 @@ export class MapService {
       }
     }
 
-    const result: Item<Edge>[] = [];
+    const result: LogicalItem<Edge>[] = [];
 
     for (const coordinate of freeCoordinates.values()) {
       let edge: Edge | null = null;
