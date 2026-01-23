@@ -65,7 +65,7 @@ export class MapService {
   public readonly edges = computed(() => this.getEdges());
 
   private history: string[] = [];
-  private candidateHistory: { tile: Tile; position: number }[] = [];
+  private candidateHistory: Tile[] = [];
 
   private canUndoPlacement_ = signal<boolean>(false);
   public canUndoPlacement = computed(() => this.canUndoPlacement_());
@@ -75,7 +75,6 @@ export class MapService {
 
   private candidate_ = signal<Tile>(new Tile());
   public candidate = computed(() => this.candidate_());
-  public addPosition = signal(0);
   private candidateStack: Tile[] = [];
 
   private markMap = new Map<string, Coordinate>();
@@ -155,7 +154,6 @@ export class MapService {
     this.updateTiles();
     this.updateCanUndoPlacement();
 
-    this.addPosition.set(0);
     this.removeMark_(coordinate);
     this.candidateHistory = [];
     this.updateCanUndoTile();
@@ -166,7 +164,6 @@ export class MapService {
   public rotateCandidate(delta: number) {
     const amount = delta > 0 ? -1 : 1;
     this.candidate_.update((c) => c.rotate(amount));
-    this.addPosition.update((x) => (x + amount + 6) % 6);
   }
 
   public undoPlacement(): void {
@@ -189,13 +186,12 @@ export class MapService {
   }
 
   public undoTile(): void {
-    const data = this.candidateHistory.pop();
-    if (!data) {
+    const tile = this.candidateHistory.pop();
+    if (!tile) {
       return;
     }
 
-    this.candidate_.set(data.tile);
-    this.addPosition.set(data.position);
+    this.candidate_.set(tile);
     this.updateCanUndoTile();
   }
 
@@ -312,32 +308,28 @@ export class MapService {
 
   public addTile(type: TileType) {
     this.candidate_.update((c) => {
-      const p = this.addPosition();
-      this.candidateHistory.push({ tile: c, position: p });
+      this.candidateHistory.push(c);
       const result = tileTypes[c.getItem(0)].normal ? c : new Tile();
-      return result.add(type, p);
+      return result.add(type);
     });
-    this.addPosition.update((p) => (p + 1) % 6);
     this.updateCanUndoTile();
   }
 
   public fillTile(type: TileType) {
     this.candidate_.update((c) => {
-      this.candidateHistory.push({ tile: c, position: this.addPosition() });
+      this.candidateHistory.push(c);
       return !tileTypes[type].normal || c.isComplete()
         ? Tile.singleTile(type)
         : c.fillUnknown(type);
     });
-    this.addPosition.set(0);
     this.updateCanUndoTile();
   }
 
   public clearCandidate(): void {
     this.candidate_.update((c) => {
-      this.candidateHistory.push({ tile: c, position: this.addPosition() });
+      this.candidateHistory.push(c);
       return new Tile();
     });
-    this.addPosition.set(0);
     this.updateCanUndoTile();
   }
 

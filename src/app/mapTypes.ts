@@ -104,9 +104,10 @@ export class Tile {
     return this.items.every((i) => i === 'Unknown');
   }
 
-  public add(tile: TileType, position: number): Tile {
-    if (position < 0 || position >= 6) {
-      throw new Error('Bad position');
+  public add(tile: TileType): Tile {
+    const position = this.items.indexOf('Unknown');
+    if (position < 0) {
+      throw new Error('Tile is full');
     }
     const items = [...this.items];
     items[position] = tile;

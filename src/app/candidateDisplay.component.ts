@@ -8,7 +8,7 @@ import {
   ChangeDetectionStrategy,
 } from '@angular/core';
 import { Coordinate, Tile } from './mapTypes';
-import { drawTile, hexagonEdgeMidpoints } from './drawHelper';
+import { drawTile } from './drawHelper';
 import { MapService } from './map.service';
 
 @Component({
@@ -21,7 +21,6 @@ import { MapService } from './map.service';
 export class CandidateDisplayComponent {
   private canvas = viewChild.required<ElementRef<HTMLCanvasElement>>('canvas');
   private mapService = inject(MapService);
-  private readonly points = hexagonEdgeMidpoints().map((c) => c.mul(100));
 
   constructor() {
     effect(() => this.render());
@@ -33,18 +32,10 @@ export class CandidateDisplayComponent {
   }
 
   private render() {
-    this.doRender(
-      this.canvas().nativeElement,
-      this.mapService.candidate(),
-      this.mapService.addPosition(),
-    );
+    this.doRender(this.canvas().nativeElement, this.mapService.candidate());
   }
 
-  private doRender(
-    canvas: HTMLCanvasElement,
-    candidate: Tile,
-    addPosition: number,
-  ) {
+  private doRender(canvas: HTMLCanvasElement, candidate: Tile) {
     const ctx = canvas.getContext('2d');
     if (!ctx) {
       return;
@@ -53,16 +44,5 @@ export class CandidateDisplayComponent {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     drawTile(ctx, candidate, new Coordinate(125, 125), 80);
-
-    if (!candidate.isComplete()) {
-      const coord = Coordinate.fromCanvasSize(canvas)
-        .div(2)
-        .add(this.points[addPosition % this.points.length]);
-
-      ctx.fillStyle = '#000';
-      ctx.beginPath();
-      ctx.arc(coord.x, coord.y, 5, 0, Math.PI * 2);
-      ctx.fill();
-    }
   }
 }
