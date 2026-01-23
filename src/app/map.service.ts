@@ -308,19 +308,24 @@ export class MapService {
 
   public addTile(type: TileType) {
     this.candidate_.update((c) => {
+      if (c.isComplete()) {
+        throw new Error('Tile is full');
+      }
+
       this.candidateHistory.push(c);
-      const result = tileTypes[c.getItem(0)].normal ? c : new Tile();
-      return result.add(type);
+      return c.add(type);
     });
     this.updateCanUndoTile();
   }
 
   public fillTile(type: TileType) {
     this.candidate_.update((c) => {
+      if (c.isComplete()) {
+        throw new Error('Tile is full');
+      }
+
       this.candidateHistory.push(c);
-      return !tileTypes[type].normal || c.isComplete()
-        ? Tile.singleTile(type)
-        : c.fill(type);
+      return !tileTypes[type].normal ? Tile.singleTile(type) : c.fill(type);
     });
     this.updateCanUndoTile();
   }
