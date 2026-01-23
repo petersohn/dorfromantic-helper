@@ -79,9 +79,6 @@ export class Tile {
     if (items.length > 6) {
       items.length = 6;
     }
-    for (let i = items.length; i < 6; ++i) {
-      items.push('Unknown');
-    }
   }
 
   public static singleTile(type: TileType): Tile {
@@ -93,29 +90,33 @@ export class Tile {
   }
 
   public getItem(id: number): TileType {
+    if (id >= this.items.length) {
+      return 'Unknown';
+    }
     return this.items[id];
   }
 
   public isComplete(): boolean {
-    return !this.items.some((i) => i === 'Unknown');
+    return this.items.length === 6;
   }
 
   public isEmpty(): boolean {
-    return this.items.every((i) => i === 'Unknown');
+    return this.items.length === 0;
   }
 
   public add(tile: TileType): Tile {
-    const position = this.items.indexOf('Unknown');
-    if (position < 0) {
+    if (this.isComplete()) {
       throw new Error('Tile is full');
     }
-    const items = [...this.items];
-    items[position] = tile;
-    return new Tile(items);
+    return new Tile([...this.items, tile]);
   }
 
-  public fillUnknown(tile: TileType): Tile {
-    return new Tile(this.items.map((t) => (t === 'Unknown' ? tile : t)));
+  public fill(tile: TileType): Tile {
+    const items = [...this.items];
+    while (items.length < 6) {
+      items.push(tile);
+    }
+    return new Tile(items);
   }
 
   public rotate(amount: number): Tile {

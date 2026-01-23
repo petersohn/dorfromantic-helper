@@ -320,7 +320,7 @@ export class MapService {
       this.candidateHistory.push(c);
       return !tileTypes[type].normal || c.isComplete()
         ? Tile.singleTile(type)
-        : c.fillUnknown(type);
+        : c.fill(type);
     });
     this.updateCanUndoTile();
   }
