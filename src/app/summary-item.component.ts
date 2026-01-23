@@ -11,8 +11,9 @@ import {
 import { drawEdge, logical2Screen } from './drawHelper';
 import { Coordinate, Edge } from './mapTypes';
 import { CommonModule } from '@angular/common';
-import { MapService } from './map.service';
+import { MapService, tileMapKey } from './map.service';
 import { DisplayPosition } from './displayPosition';
+import { hashList } from './hash';
 
 @Component({
   selector: 'summary-item',
@@ -35,12 +36,19 @@ export class SummaryItemComponent {
   private jumpList: Coordinate[] | null = null;
   private jumpIndex = 0;
   private edgesToSort: Coordinate[] = [];
+  private edgesHash: number | null = null;
 
   constructor() {
     effect(() => this.render());
     effect(() => {
-      this.edgesToSort = this.edges();
+      const edges = this.edges();
+      const hash = hashList(edges.map(tileMapKey));
+      if (this.edgesHash === hash) {
+        return;
+      }
+      this.edgesToSort = edges;
       this.jumpList = null;
+      this.edgesHash = hash;
     });
   }
 
@@ -103,7 +111,7 @@ export class SummaryItemComponent {
       const { index } = this.edgesToSort.reduce(
         (acc: Accumulator | null, curr: Coordinate, index: number) => {
           const diff = coord.sub(logical2Screen(curr));
-          const absdiff = Math.abs(diff.x) + Math.abs(diff.y);
+          const absdiff = diff.x * diff.x + diff.y * diff.y;
           if (acc === null || absdiff < acc.diff) {
             return { diff: absdiff, index };
           } else {
@@ -115,7 +123,7 @@ export class SummaryItemComponent {
 
       const [best] = this.edgesToSort.splice(index, 1);
       this.jumpList.push(best);
-      coord = best;
+      coord = logical2Screen(best);
     }
 
     return this.jumpList;
