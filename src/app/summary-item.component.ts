@@ -74,13 +74,22 @@ export class SummaryItemComponent {
     );
   }
 
-  public onRightClick(event: MouseEvent) {
+  public onContextMenu(event: MouseEvent) {
     event.preventDefault();
-    this.cycleItems(-1);
   }
 
-  public onClick() {
-    this.cycleItems(1);
+  public onMouseDown(event: MouseEvent) {
+    switch (event.button) {
+      case 0:
+        this.cycleItems(1);
+        break;
+      case 1:
+        this.cycleItems(0);
+        break;
+      case 2:
+        this.cycleItems(-1);
+        break;
+    }
   }
 
   private cycleItems(direction: number) {
