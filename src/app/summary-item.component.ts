@@ -74,13 +74,29 @@ export class SummaryItemComponent {
     );
   }
 
+  public onRightClick(event: MouseEvent) {
+    event.preventDefault();
+    this.cycleItems(-1);
+  }
+
   public onClick() {
-    const edges = this.calculateJumpList();
-    if (edges.length === 0) {
+    this.cycleItems(1);
+  }
+
+  private cycleItems(direction: number) {
+    const isCalculated = this.calculateJumpList();
+    // jumpList cannot be null, but we have to make TypeScript happy.
+    if (this.jumpList === null || this.jumpList.length === 0) {
       return;
     }
 
-    const coord = edges[this.jumpIndex];
+    if (!isCalculated) {
+      this.jumpIndex =
+        (this.jumpIndex + direction + this.jumpList.length) %
+        this.jumpList.length;
+    }
+
+    const coord = this.jumpList[this.jumpIndex];
     this.mapService.displayPosition.update((dp) => {
       const physical = dp.screen2Physical(logical2Screen(coord));
       return new DisplayPosition(
@@ -88,12 +104,11 @@ export class SummaryItemComponent {
         dp.zoomLevel,
       );
     });
-    this.jumpIndex = (this.jumpIndex + 1) % edges.length;
   }
 
-  private calculateJumpList(): LogicalCoordinate[] {
+  private calculateJumpList(): boolean {
     if (this.jumpList !== null) {
-      return this.jumpList;
+      return false;
     }
 
     this.jumpList = [];
@@ -126,6 +141,6 @@ export class SummaryItemComponent {
       coord = logical2Screen(best);
     }
 
-    return this.jumpList;
+    return true;
   }
 }

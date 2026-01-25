@@ -28,7 +28,9 @@ export class CandidateDisplayComponent {
 
   @HostListener('wheel', ['$event'])
   public onMouseWheel(event: WheelEvent) {
-    this.mapService.rotateCandidate(event.deltaY);
+    if (this.mapService.candidate().isComplete()) {
+      this.mapService.rotateCandidate(event.deltaY);
+    }
   }
 
   private render() {
