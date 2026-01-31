@@ -60,6 +60,10 @@ export class MapService {
     new DisplayPosition(new PhysicalCoordinate(0, 0), 0),
   );
 
+  public readonly showDebug = signal(false);
+  public readonly summaryTrace = signal<LogicalCoordinate[]>([]);
+  public readonly summaryTraceIndex = signal(0);
+
   private tileMap = new Map<string, LogicalItem<Tile>>();
   private readonly tiles_ = signal<LogicalItem<Tile>[]>([]);
   public readonly tiles = computed(() => this.tiles_());

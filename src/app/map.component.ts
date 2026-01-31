@@ -250,5 +250,32 @@ export class MapComponent implements OnInit {
       drawTile(ctx, candidateShow.item, center, displayPosition.zoom());
       ctx.globalAlpha = 1.0;
     }
+
+    if (this.mapService.showDebug()) {
+      const trace = this.mapService.summaryTrace();
+      if (trace.length > 0) {
+        ctx.strokeStyle = 'red';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        const coord = displayPosition.screen2Physical(logical2Screen(trace[0]));
+        ctx.moveTo(coord.x, coord.y);
+        for (let i = 1; i < trace.length; ++i) {
+          const coord = displayPosition.screen2Physical(
+            logical2Screen(trace[i]),
+          );
+          ctx.lineTo(coord.x, coord.y);
+        }
+        ctx.stroke();
+
+        const index = this.mapService.summaryTraceIndex();
+        if (index < trace.length) {
+          ctx.fillStyle = 'red';
+          const coord = displayPosition.screen2Physical(
+            logical2Screen(trace[index]),
+          );
+          ctx.ellipse(coord.x, coord.y, 3, 3, 0, 0, 0);
+        }
+      }
+    }
   }
 }

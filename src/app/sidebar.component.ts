@@ -2,6 +2,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  effect,
   ElementRef,
   inject,
   viewChild,
@@ -42,7 +43,11 @@ export class SidebarComponent {
   public canAddTile = computed(() => !this.mapService.candidate().isComplete());
   public canClearTile = computed(() => !this.mapService.candidate().isEmpty());
   public summaryItems = computed(() => this.calculateSummary());
-  public showSummary = computed(() => this.mapService.candidate().isComplete());
+  public showDebug = this.mapService.showDebug;
+
+  public onDebugClick(event: MouseEvent) {
+    this.showDebug.set((event.target as HTMLInputElement).checked);
+  }
 
   public getColor(type: TileType): string {
     return tileColors[type];
@@ -107,11 +112,16 @@ export class SidebarComponent {
   }
 
   private calculateSummary(): SummaryItem[] {
-    const marks = new Set(this.mapService.marks().map((m) => tileMapKey(m)));
     const result: SummaryItem[] = [];
     for (let i = 0; i < 6; ++i) {
       result.push({ edges: [], marks: 0 });
     }
+
+    if (!this.mapService.candidate().isComplete()) {
+      return result;
+    }
+
+    const marks = new Set(this.mapService.marks().map((m) => tileMapKey(m)));
 
     for (const edge of this.mapService.edges()) {
       if (!edge.item.isGood()) {

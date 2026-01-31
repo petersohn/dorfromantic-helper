@@ -105,6 +105,9 @@ export class SummaryItemComponent {
         this.jumpList.length;
     }
 
+    this.mapService.summaryTrace.set(this.jumpList);
+    this.mapService.summaryTraceIndex.set(this.jumpIndex);
+
     const coord = this.jumpList[this.jumpIndex];
     this.mapService.displayPosition.update((dp) => {
       const physical = dp.screen2Physical(logical2Screen(coord));
@@ -131,6 +134,7 @@ export class SummaryItemComponent {
     let coord = this.mapService
       .displayPosition()
       .physical2Screen(this.mapService.getWindowSize().div(2));
+    const trace: PhysicalCoordinate[] = [];
     while (this.edgesToSort.length !== 0) {
       const { index } = this.edgesToSort.reduce(
         (acc: Accumulator | null, curr: LogicalCoordinate, index: number) => {
@@ -148,6 +152,7 @@ export class SummaryItemComponent {
       const [best] = this.edgesToSort.splice(index, 1);
       this.jumpList.push(best);
       coord = logical2Screen(best);
+      trace.push(coord);
     }
 
     return true;

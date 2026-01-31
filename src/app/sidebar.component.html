@@ -36,12 +36,25 @@
   <button [disabled]="!canClearTile()" (click)="clearTile()">Clear</button>
 </div>
 
+<div class="summary">
+  @for (item of summaryItems(); track $index; let idx = $index) {
+    <summary-item
+      [edgeCount]="idx + 1"
+      [edges]="item.edges"
+      [markCount]="item.marks"
+    >
+    </summary-item>
+  }
+</div>
+
 <div class="candidate-container">
   <candidate-display></candidate-display>
 </div>
 
 <div class="menu">
-  <button [disabled]="!canUndoPlacement()" (click)="undoPlacement()">Undo placement</button>
+  <button [disabled]="!canUndoPlacement()" (click)="undoPlacement()">
+    Undo placement
+  </button>
   <button (click)="resetGame()">Reset game</button>
 </div>
 
@@ -50,14 +63,20 @@
   <button (click)="import()">Import game</button>
 </div>
 
-@if (showSummary()) {
-<div class="summary">
-@for (item of summaryItems(); track $index; let idx = $index) {
-<summary-item [edgeCount]="idx + 1" [edges]="item.edges" [markCount]="item.marks">
-</summary-item>
-}
+<div class="menu">
+  <input
+    type="checkbox"
+    id="debugCheckbox"
+    [checked]="showDebug()"
+    (click)="onDebugClick($event)"
+  /><label for="debugCheckbox">Debug</label>
 </div>
-}
 
 <a #downloader hidden download="game.json"></a>
-<input #uploader type="file" accept="application/json" hidden (change)="uploaded()">
+<input
+  #uploader
+  type="file"
+  accept="application/json"
+  hidden
+  (change)="uploaded()"
+/>
