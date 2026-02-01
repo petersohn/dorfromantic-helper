@@ -268,12 +268,15 @@ export class MapComponent implements OnInit {
         ctx.stroke();
 
         const index = this.mapService.summaryTraceIndex();
+        console.log(index, trace.length);
         if (index < trace.length) {
           ctx.fillStyle = 'red';
+          ctx.beginPath();
           const coord = displayPosition.screen2Physical(
             logical2Screen(trace[index]),
           );
-          ctx.ellipse(coord.x, coord.y, 3, 3, 0, 0, 0);
+          ctx.arc(coord.x, coord.y, 5, 0, 2 * Math.PI);
+          ctx.fill();
         }
       }
     }
