@@ -54,7 +54,7 @@ export class MapComponent implements OnInit {
   });
 
   private panOrigin: PhysicalCoordinate | null = null;
-  private mouseMovedWhileDown: boolean | null = null;
+  private mouseDownPosition: PhysicalCoordinate | null = null;
 
   constructor() {
     effect(() => this.render());
@@ -73,20 +73,32 @@ export class MapComponent implements OnInit {
 
   @HostListener('mousedown', ['$event'])
   public onMouseDown(event: MouseEvent) {
-    this.mouseMovedWhileDown = false;
-    this.panOrigin = PhysicalCoordinate.fromMouseEvent(
+    this.mouseDownPosition = PhysicalCoordinate.fromMouseEvent(
       this.parent.nativeElement,
       event,
     );
+    this.panOrigin = this.mouseDownPosition;
   }
 
   @HostListener('mouseup', ['$event'])
   public onMouseUp(event: MouseEvent) {
-    this.panOrigin = null;
-    const isMoved = this.mouseMovedWhileDown;
-    this.mouseMovedWhileDown = null;
-    if (isMoved) {
+    if (this.panOrigin === null) {
       return;
+    }
+
+    this.panOrigin = null;
+    const mouseUpPosition = PhysicalCoordinate.fromMouseEvent(
+      this.parent.nativeElement,
+      event,
+    );
+
+    if (this.mouseDownPosition !== null) {
+      const diff = mouseUpPosition.sub(this.mouseDownPosition);
+      this.mouseDownPosition = null;
+      const distance = Math.max(Math.abs(diff.x), Math.abs(diff.y));
+      if (distance > 2) {
+        return;
+      }
     }
 
     const mousePosition = PhysicalCoordinate.fromMouseEvent(
@@ -114,23 +126,19 @@ export class MapComponent implements OnInit {
 
   @HostListener('mouseout', [])
   public onMouseOut() {
-    this.mouseMovedWhileDown = true;
+    this.mouseDownPosition = null;
     this.panOrigin = null;
     this.candidateShowPosition.set(null);
   }
 
   @HostListener('mousemove', ['$event'])
   public onMouseMove(event: MouseEvent) {
-    if (this.mouseMovedWhileDown === false) {
-      this.mouseMovedWhileDown = true;
-    }
-
     const mousePosition = PhysicalCoordinate.fromMouseEvent(
       this.parent.nativeElement,
       event,
     );
 
-    if (!this.panOrigin) {
+    if (this.panOrigin === null) {
       const logical = screen2Logical(
         this.mapService.displayPosition().physical2Screen(mousePosition),
       );
