@@ -141,9 +141,18 @@ export class MapService {
     this.updateMarks();
   }
 
-  public canAddCandidate(coordinate: LogicalCoordinate): boolean {
+  public canAddCandidate(
+    coordinate: LogicalCoordinate,
+    checkValidity: boolean,
+  ): boolean {
+    if (this.tileMap.has(tileMapKey(coordinate))) {
+      return false;
+    }
+
     const c = this.candidate();
-    return c.isComplete() && !!this.getEdge(c, coordinate, 0);
+    return (
+      c.isComplete() && (!checkValidity || !!this.getEdge(c, coordinate, 0))
+    );
   }
 
   public addCandidate(coordinate: LogicalCoordinate): void {

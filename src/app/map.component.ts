@@ -106,7 +106,7 @@ export class MapComponent implements OnInit {
     } else if (event.shiftKey) {
       this.mapService.removeTile(coord);
     } else {
-      if (event.ctrlKey || this.mapService.canAddCandidate(coord)) {
+      if (this.mapService.canAddCandidate(coord, !event.ctrlKey)) {
         this.mapService.addCandidate(coord);
       }
     }
