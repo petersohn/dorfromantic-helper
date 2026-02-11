@@ -350,10 +350,8 @@ export class MapService {
   }
 
   public clearCandidate(): void {
-    this.candidate_.update((c) => {
-      this.candidateHistory.push(c);
-      return new Tile();
-    });
+    this.popCandidate();
+    this.candidateHistory = [];
     this.updateCanUndoTile();
   }
 
