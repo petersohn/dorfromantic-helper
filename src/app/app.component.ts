@@ -8,7 +8,7 @@ import { SidebarComponent } from './sidebar.component';
   selector: 'app-root',
   standalone: true,
   providers: [MapService],
-  imports: [RouterOutlet, MapComponent, SidebarComponent],
+  imports: [MapComponent, SidebarComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
