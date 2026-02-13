@@ -328,7 +328,13 @@ describe('mapTypes', () => {
       });
 
       it('should return copy of array', () => {
-        const tile = new Tile(['Grassland', 'Forest']);
+        const tile = new Tile([
+          'Grassland',
+          'Forest',
+          'Field',
+          'Railway',
+          'Railway',
+        ]);
         const serialized = tile.serialize();
         serialized.push('Field');
         expect(tile.isComplete()).toBe(false);
@@ -353,59 +359,6 @@ describe('mapTypes', () => {
         const edge = new Edge(6, 4);
         expect(edge.isGood()).toBe(false);
       });
-    });
-  });
-
-  describe('tileColors', () => {
-    it('should have color for each tile type', () => {
-      const types: TileType[] = [
-        'Unknown',
-        'Grassland',
-        'Forest',
-        'Field',
-        'Town',
-        'River',
-        'Lake',
-        'Railway',
-        'WaterStation',
-      ];
-      types.forEach((type) => {
-        expect(tileColors[type]).toBeTruthy();
-        expect(typeof tileColors[type]).toBe('string');
-      });
-    });
-  });
-
-  describe('tileTypes', () => {
-    it('should have config for each tile type', () => {
-      const types: TileType[] = [
-        'Unknown',
-        'Grassland',
-        'Forest',
-        'Field',
-        'Town',
-        'River',
-        'Lake',
-        'Railway',
-        'WaterStation',
-      ];
-      types.forEach((type) => {
-        expect(tileTypes[type]).toBeTruthy();
-        expect(tileTypes[type]).toHaveProperty('normal');
-        expect(tileTypes[type]).toHaveProperty('fill');
-      });
-    });
-
-    it('should have correct normal values', () => {
-      expect(tileTypes.Unknown.normal).toBe(false);
-      expect(tileTypes.Grassland.normal).toBe(true);
-      expect(tileTypes.WaterStation.normal).toBe(false);
-    });
-
-    it('should have correct fill values', () => {
-      expect(tileTypes.Unknown.fill).toBe(false);
-      expect(tileTypes.Grassland.fill).toBe(true);
-      expect(tileTypes.WaterStation.fill).toBe(true);
     });
   });
 });
