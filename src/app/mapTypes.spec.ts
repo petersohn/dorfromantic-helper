@@ -258,7 +258,28 @@ describe('mapTypes', () => {
         const rotated = tile.rotate(1);
         expect(rotated.getItem(0)).toBe('Lake');
         expect(rotated.getItem(1)).toBe('Grassland');
+        expect(rotated.getItem(2)).toBe('Forest');
+        expect(rotated.getItem(3)).toBe('Field');
+        expect(rotated.getItem(4)).toBe('Town');
         expect(rotated.getItem(5)).toBe('River');
+      });
+
+      it('should rotate tile counterclockwise', () => {
+        const tile = new Tile([
+          'Grassland',
+          'Forest',
+          'Field',
+          'Town',
+          'River',
+          'Lake',
+        ]);
+        const rotated = tile.rotate(-1);
+        expect(rotated.getItem(0)).toBe('Forest');
+        expect(rotated.getItem(1)).toBe('Field');
+        expect(rotated.getItem(2)).toBe('Town');
+        expect(rotated.getItem(3)).toBe('River');
+        expect(rotated.getItem(4)).toBe('Lake');
+        expect(rotated.getItem(5)).toBe('Grassland');
       });
 
       it('should rotate 6 times to get original', () => {
