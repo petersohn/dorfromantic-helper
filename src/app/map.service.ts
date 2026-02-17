@@ -136,8 +136,11 @@ export class MapService {
     this.history = [];
     this.candidateStack = [];
     this.markMap = new Map();
+    this.candidate_.set(new Tile());
+    this.candidateHistory = [];
 
     this.updateCanUndoPlacement();
+    this.updateCanUndoTile();
     this.updateMarks();
   }
 
