@@ -8,7 +8,7 @@ import {
   viewChild,
 } from '@angular/core';
 import { MapService, tileMapKey } from './map.service';
-import { LogicalCoordinate, tileColors, TileType, tileTypes } from './mapTypes';
+import { LogicalCoordinate, TileType, tileTypes } from './mapTypes';
 import { NgStyle } from '@angular/common';
 import { CandidateDisplayComponent } from './candidateDisplay.component';
 import { SummaryItemComponent } from './summary-item.component';
@@ -50,7 +50,7 @@ export class SidebarComponent {
   }
 
   public getColor(type: TileType): string {
-    return tileColors[type];
+    return tileTypes[type].color;
   }
 
   public addTile(type: TileType) {

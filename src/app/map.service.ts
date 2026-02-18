@@ -7,7 +7,6 @@ import {
   LogicalItem,
   oppositeDirection,
   Tile,
-  tileColors,
   TileType,
   tileTypes,
 } from './mapTypes';
@@ -288,7 +287,7 @@ export class MapService {
       }
       const items = Array.from(tile.item) as TileType[];
       for (const item of items) {
-        if (!tileColors[item]) {
+        if (!tileTypes[item]) {
           throw new Error('Bad input');
         }
       }

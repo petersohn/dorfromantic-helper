@@ -5,7 +5,6 @@ import {
   oppositeDirection,
   Tile,
   Edge,
-  tileColors,
   tileTypes,
 } from './mapTypes';
 import { describe, expect, it } from 'vitest';

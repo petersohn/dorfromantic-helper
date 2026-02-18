@@ -3,7 +3,7 @@ import {
   LogicalCoordinate,
   Edge,
   Tile,
-  tileColors,
+  tileTypes,
 } from './mapTypes';
 
 const sqrt3 = Math.sqrt(3);
@@ -41,7 +41,7 @@ export function drawTile(
 ): void {
   const vertices = getVertices(center, radius);
   for (let i = 0; i < 6; ++i) {
-    ctx.fillStyle = tileColors[tile.getItem(i)];
+    ctx.fillStyle = tileTypes[tile.getItem(i)].color;
     ctx.beginPath();
     ctx.moveTo(center.x, center.y);
     ctx.lineTo(vertices[i].x, vertices[i].y);

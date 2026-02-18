@@ -163,28 +163,16 @@ export interface ItemBase<T, CoordinateType> {
 export type LogicalItem<T> = ItemBase<T, LogicalCoordinate>;
 export type PhysicalItem<T> = ItemBase<T, PhysicalCoordinate>;
 
-export const tileColors: { [key in TileType]: string } = {
-  Unknown: '#aaa',
-  Grassland: '#91d63e',
-  Forest: '#1f771a',
-  Field: '#d8d515',
-  Town: '#ce5c73',
-  River: '#0d99c4',
-  Lake: '#64c3e0',
-  Railway: '#91632b',
-  WaterStation: '#14e8b6',
-};
+export type TileConfig = { normal: boolean; fill: boolean; color: string };
 
-export const tileTypes: {
-  [key in TileType]: { normal: boolean; fill: boolean };
-} = {
-  Unknown: { normal: false, fill: false },
-  Grassland: { normal: true, fill: true },
-  Forest: { normal: true, fill: true },
-  Field: { normal: true, fill: true },
-  Town: { normal: true, fill: true },
-  River: { normal: true, fill: true },
-  Lake: { normal: true, fill: true },
-  Railway: { normal: true, fill: true },
-  WaterStation: { normal: false, fill: true },
+export const tileTypes: { [key in TileType]: TileConfig } = {
+  Unknown: { normal: false, fill: false, color: '#aaa' },
+  Grassland: { normal: true, fill: true, color: '#91d63e' },
+  Forest: { normal: true, fill: true, color: '#1f771a' },
+  Field: { normal: true, fill: true, color: '#d8d515' },
+  Town: { normal: true, fill: true, color: '#ce5c73' },
+  River: { normal: true, fill: true, color: '#0d99c4' },
+  Lake: { normal: true, fill: true, color: '#64c3e0' },
+  Railway: { normal: true, fill: true, color: '#91632b' },
+  WaterStation: { normal: false, fill: true, color: '#14e8b6' },
 };
