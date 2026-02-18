@@ -34,7 +34,9 @@ export class SidebarComponent {
   public readonly tileTypes = tileTypes;
 
   public tileKeys(): TileType[] {
-    return Object.keys(tileTypes) as TileType[];
+    return Object.keys(tileTypes)
+      .map(Number)
+      .filter((k): k is TileType => !isNaN(k));
   }
 
   public canUndoTile = this.mapService.canUndoTile;

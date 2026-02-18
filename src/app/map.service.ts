@@ -15,6 +15,17 @@ export function tileMapKey(c: LogicalCoordinate) {
   return `${c.x},${c.y}`;
 }
 
+function toTileType(value: TileType | string): TileType {
+  if (typeof value === 'number') {
+    return value as TileType;
+  }
+  const found = Object.entries(TileType).find(([k]) => k === value);
+  if (found) {
+    return Number(found[1]) as TileType;
+  }
+  return TileType.Unknown;
+}
+
 interface Match {
   from: TileType;
   to: TileType;
@@ -28,32 +39,32 @@ export class MapService {
 
   private readonly matchMap: Match[] = [
     {
-      from: 'River',
-      to: 'Lake',
+      from: TileType.River,
+      to: TileType.Lake,
     },
     {
-      from: 'River',
-      to: 'WaterStation',
+      from: TileType.River,
+      to: TileType.WaterStation,
     },
     {
-      from: 'Lake',
-      to: 'WaterStation',
+      from: TileType.Lake,
+      to: TileType.WaterStation,
     },
     {
-      from: 'Lake',
-      to: 'Grassland',
+      from: TileType.Lake,
+      to: TileType.Grassland,
     },
     {
-      from: 'Railway',
-      to: 'WaterStation',
+      from: TileType.Railway,
+      to: TileType.WaterStation,
     },
     {
-      from: 'Grassland',
-      to: 'WaterStation',
+      from: TileType.Grassland,
+      to: TileType.WaterStation,
     },
   ];
 
-  private readonly onlyMatch: TileType[] = ['River', 'Railway'];
+  private readonly onlyMatch: TileType[] = [TileType.River, TileType.Railway];
 
   public readonly displayPosition = signal<DisplayPosition>(
     new DisplayPosition(new PhysicalCoordinate(0, 0), 0),
@@ -124,7 +135,7 @@ export class MapService {
         '0,0',
         {
           coordinate: new LogicalCoordinate(0, 0),
-          item: Tile.singleTile('Grassland'),
+          item: Tile.singleTile(TileType.Grassland),
         },
       ],
     ]);
@@ -285,12 +296,14 @@ export class MapService {
       ) {
         throw new Error('Bad input');
       }
-      const items = Array.from(tile.item) as TileType[];
-      for (const item of items) {
-        if (!tileTypes[item]) {
+      const rawItems = Array.from(tile.item) as (TileType | string)[];
+      const items: TileType[] = rawItems.map((item: TileType | string) => {
+        const converted = toTileType(item);
+        if (!tileTypes[converted]) {
           throw new Error('Bad input');
         }
-      }
+        return converted;
+      });
       const coordinate = new LogicalCoordinate(
         tile.coordinate.x,
         tile.coordinate.y,

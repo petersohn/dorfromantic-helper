@@ -5,6 +5,7 @@ import {
   LogicalCoordinate,
   LogicalItem,
   PhysicalCoordinate,
+  TileType,
 } from './mapTypes';
 import { DisplayPosition } from './displayPosition';
 
@@ -68,11 +69,11 @@ describe('MapService', () => {
       const tiles = service.tiles();
       expect(tiles).toHaveLength(1);
       expect(tiles[0].coordinate).toEqual(new LogicalCoordinate(0, 0));
-      expect(tiles[0].item.getItem(0)).toBe('Grassland');
+      expect(tiles[0].item.getItem(0)).toBe(TileType.Grassland);
     });
 
     it('should clear history', () => {
-      service.fillTile('Grassland');
+      service.fillTile(TileType.Grassland);
       service.addCandidate(new LogicalCoordinate(1, 0));
       service.reset();
       expect(service.canUndoPlacement()).toBe(false);
@@ -98,66 +99,66 @@ describe('MapService', () => {
 
   describe('addTile', () => {
     it('should add multiple tile types', () => {
-      service.addTile('Forest');
-      service.addTile('Field');
-      expect(service.candidate().getItem(0)).toBe('Forest');
-      expect(service.candidate().getItem(1)).toBe('Field');
+      service.addTile(TileType.Forest);
+      service.addTile(TileType.Field);
+      expect(service.candidate().getItem(0)).toBe(TileType.Forest);
+      expect(service.candidate().getItem(1)).toBe(TileType.Field);
     });
 
     it('should allow undo of tile addition', () => {
-      service.addTile('Forest');
+      service.addTile(TileType.Forest);
       expect(service.canUndoTile()).toBe(true);
       service.undoTile();
       expect(service.candidate().isEmpty()).toBe(true);
     });
 
     it('should throw when tile is complete', () => {
-      service.addTile('Forest');
-      service.addTile('Field');
-      service.addTile('Town');
-      service.addTile('River');
-      service.addTile('Lake');
-      service.addTile('Railway');
-      expect(() => service.addTile('Grassland')).toThrow('Tile is full');
+      service.addTile(TileType.Forest);
+      service.addTile(TileType.Field);
+      service.addTile(TileType.Town);
+      service.addTile(TileType.River);
+      service.addTile(TileType.Lake);
+      service.addTile(TileType.Railway);
+      expect(() => service.addTile(TileType.Grassland)).toThrow('Tile is full');
     });
   });
 
   describe('fillTile', () => {
     it('should fill remaining slots with type', () => {
-      service.addTile('Forest');
-      service.fillTile('Field');
+      service.addTile(TileType.Forest);
+      service.fillTile(TileType.Field);
       const candidate = service.candidate();
       expect(candidate.isComplete()).toBe(true);
-      expect(candidate.getItem(0)).toBe('Forest');
+      expect(candidate.getItem(0)).toBe(TileType.Forest);
       for (let i = 1; i < 6; i++) {
-        expect(candidate.getItem(i)).toBe('Field');
+        expect(candidate.getItem(i)).toBe(TileType.Field);
       }
     });
 
     it('should handle non-normal tile types', () => {
-      service.fillTile('WaterStation');
+      service.fillTile(TileType.WaterStation);
       const candidate = service.candidate();
       expect(candidate.isComplete()).toBe(true);
       for (let i = 0; i < 6; i++) {
-        expect(candidate.getItem(i)).toBe('WaterStation');
+        expect(candidate.getItem(i)).toBe(TileType.WaterStation);
       }
     });
 
     it('should allow undo', () => {
-      service.fillTile('WaterStation');
+      service.fillTile(TileType.WaterStation);
       expect(service.canUndoTile()).toBe(true);
     });
   });
 
   describe('clearCandidate', () => {
     it('should clear the candidate', () => {
-      service.addTile('Forest');
+      service.addTile(TileType.Forest);
       service.clearCandidate();
       expect(service.candidate().isEmpty()).toBe(true);
     });
 
     it('should clear candidate history', () => {
-      service.addTile('Forest');
+      service.addTile(TileType.Forest);
       service.clearCandidate();
       expect(service.canUndoTile()).toBe(false);
     });
@@ -165,24 +166,24 @@ describe('MapService', () => {
 
   describe('rotateCandidate', () => {
     it('should rotate candidate counterclockwise', () => {
-      service.addTile('Forest');
-      service.addTile('Field');
+      service.addTile(TileType.Forest);
+      service.addTile(TileType.Field);
       const before = service.candidate();
-      expect(before.getItem(0)).toBe('Forest');
-      expect(before.getItem(1)).toBe('Field');
+      expect(before.getItem(0)).toBe(TileType.Forest);
+      expect(before.getItem(1)).toBe(TileType.Field);
       service.rotateCandidate(-1);
       const after = service.candidate();
-      expect(after.getItem(1)).toBe('Forest');
-      expect(after.getItem(2)).toBe('Field');
+      expect(after.getItem(1)).toBe(TileType.Forest);
+      expect(after.getItem(2)).toBe(TileType.Field);
     });
 
     it('should rotate candidate clockwise', () => {
-      service.addTile('Forest');
-      service.addTile('Field');
+      service.addTile(TileType.Forest);
+      service.addTile(TileType.Field);
       service.rotateCandidate(1);
       const after = service.candidate();
-      expect(after.getItem(0)).toBe('Field');
-      expect(after.getItem(5)).toBe('Forest');
+      expect(after.getItem(0)).toBe(TileType.Field);
+      expect(after.getItem(5)).toBe(TileType.Forest);
     });
   });
 
@@ -200,7 +201,7 @@ describe('MapService', () => {
       'should return %s for %o with checkValidity %s',
       (expected, coord, checkValidity) => {
         service.reset();
-        service.fillTile('Grassland');
+        service.fillTile(TileType.Grassland);
         expect(service.canAddCandidate(coord, checkValidity)).toBe(expected);
       },
     );
@@ -209,7 +210,7 @@ describe('MapService', () => {
   describe('addCandidate', () => {
     beforeEach(() => {
       service.reset();
-      service.fillTile('Grassland');
+      service.fillTile(TileType.Grassland);
     });
 
     it('should add tile to map', () => {
@@ -232,7 +233,7 @@ describe('MapService', () => {
 
     it('should throw when candidate is not complete', () => {
       service.reset();
-      service.addTile('Forest');
+      service.addTile(TileType.Forest);
       expect(() => service.addCandidate(new LogicalCoordinate(1, 0))).toThrow(
         'Not ready',
       );
@@ -248,7 +249,7 @@ describe('MapService', () => {
   describe('undoPlacement', () => {
     beforeEach(() => {
       service.reset();
-      service.fillTile('Grassland');
+      service.fillTile(TileType.Grassland);
     });
 
     it('should remove last placed tile', () => {
@@ -271,18 +272,18 @@ describe('MapService', () => {
 
   describe('undoTile', () => {
     it('should restore previous candidate state after an add', () => {
-      service.addTile('Forest');
-      service.addTile('Field');
+      service.addTile(TileType.Forest);
+      service.addTile(TileType.Field);
       service.undoTile();
-      expect(service.candidate().getItem(0)).toBe('Forest');
+      expect(service.candidate().getItem(0)).toBe(TileType.Forest);
       expect(service.candidate().isComplete()).toBe(false);
     });
 
     it('should restore previous candidate state after a fill', () => {
-      service.addTile('Field');
-      service.fillTile('Grassland');
+      service.addTile(TileType.Field);
+      service.fillTile(TileType.Grassland);
       service.undoTile();
-      expect(service.candidate().getItem(0)).toBe('Field');
+      expect(service.candidate().getItem(0)).toBe(TileType.Field);
       expect(service.candidate().isComplete()).toBe(false);
     });
 
@@ -295,8 +296,8 @@ describe('MapService', () => {
   describe('removeTile', () => {
     beforeEach(() => {
       service.reset();
-      service.addTile('Forest');
-      service.fillTile('Grassland');
+      service.addTile(TileType.Forest);
+      service.fillTile(TileType.Grassland);
       service.addCandidate(new LogicalCoordinate(1, 0));
     });
 
@@ -308,8 +309,8 @@ describe('MapService', () => {
     it('should push removed tile to candidate', () => {
       service.removeTile(new LogicalCoordinate(1, 0));
       expect(service.candidate().isComplete()).toBe(true);
-      expect(service.candidate().getItem(0)).toBe('Forest');
-      expect(service.candidate().getItem(1)).toBe('Grassland');
+      expect(service.candidate().getItem(0)).toBe(TileType.Forest);
+      expect(service.candidate().getItem(1)).toBe(TileType.Grassland);
     });
 
     it('should do nothing for non-existent tile', () => {
@@ -327,11 +328,11 @@ describe('MapService', () => {
 
     it('should return tile for occupied coordinate', () => {
       service.reset();
-      service.fillTile('Forest');
+      service.fillTile(TileType.Forest);
       service.addCandidate(new LogicalCoordinate(1, 0));
       const tile = service.getTile(new LogicalCoordinate(1, 0));
       expect(tile).not.toBeNull();
-      expect(tile!.item.getItem(0)).toBe('Forest');
+      expect(tile!.item.getItem(0)).toBe(TileType.Forest);
     });
   });
 
@@ -344,7 +345,7 @@ describe('MapService', () => {
     });
 
     it('should not add mark on occupied coordinate', () => {
-      service.fillTile('Forest');
+      service.fillTile(TileType.Forest);
       service.addCandidate(new LogicalCoordinate(1, 0));
       service.addMark(new LogicalCoordinate(1, 0));
       expect(service.marks()).toHaveLength(0);
@@ -359,7 +360,7 @@ describe('MapService', () => {
 
   describe('serializeGame and deserializeGame', () => {
     it('should serialize game state', () => {
-      service.fillTile('Forest');
+      service.fillTile(TileType.Forest);
       service.addCandidate(new LogicalCoordinate(1, 0));
 
       const serialized = service.serializeGame();
@@ -368,7 +369,7 @@ describe('MapService', () => {
     });
 
     it('should deserialize game state', () => {
-      service.fillTile('Forest');
+      service.fillTile(TileType.Forest);
       service.addCandidate(new LogicalCoordinate(1, 0));
 
       const serialized = service.serializeGame();
@@ -394,22 +395,22 @@ describe('MapService', () => {
     });
 
     it('should return empty when candidate is not complete', () => {
-      service.addTile('Grassland');
+      service.addTile(TileType.Grassland);
       expect(service.edges()).toHaveLength(0);
     });
 
     it('should return edges for free neighbors', () => {
-      service.fillTile('Grassland');
+      service.fillTile(TileType.Grassland);
 
       const edges = service.edges();
       expect(edges.length).toBeGreaterThan(0);
     });
 
     it('should calculate edges at exact coordinates after placing one tile', () => {
-      service.fillTile('Grassland');
+      service.fillTile(TileType.Grassland);
       service.addCandidate(new LogicalCoordinate(1, 0));
 
-      service.fillTile('Grassland');
+      service.fillTile(TileType.Grassland);
       const edges = service.edges();
 
       const edgeAt1_1 = findEdge(edges, 1, 1);
@@ -419,13 +420,13 @@ describe('MapService', () => {
     });
 
     it('should calculate edges at exact coordinates after placing two tiles', () => {
-      service.fillTile('Grassland');
+      service.fillTile(TileType.Grassland);
       service.addCandidate(new LogicalCoordinate(1, 0));
 
-      service.fillTile('Grassland');
+      service.fillTile(TileType.Grassland);
       service.addCandidate(new LogicalCoordinate(1, 1));
 
-      service.fillTile('Grassland');
+      service.fillTile(TileType.Grassland);
       const edges = service.edges();
 
       const edgeAt0_1 = findEdge(edges, 0, 1);
@@ -440,10 +441,10 @@ describe('MapService', () => {
     });
 
     it('should calculate edges for non-matching tiles', () => {
-      service.fillTile('Forest');
+      service.fillTile(TileType.Forest);
       service.addCandidate(new LogicalCoordinate(1, 0));
 
-      service.fillTile('Grassland');
+      service.fillTile(TileType.Grassland);
       const edges = service.edges();
 
       const edgeAt1_1 = findEdge(edges, 1, 1);
@@ -453,10 +454,10 @@ describe('MapService', () => {
     });
 
     it('should calculate edge for River matching with Lake', () => {
-      service.fillTile('River');
+      service.fillTile(TileType.River);
       service.addCandidate(new LogicalCoordinate(1, 0));
 
-      service.fillTile('Lake');
+      service.fillTile(TileType.Lake);
       const edges = service.edges();
 
       const edgeAt1_1 = findEdge(edges, 1, 1);
@@ -466,10 +467,10 @@ describe('MapService', () => {
     });
 
     it('should calculate edge for Railway matching with WaterStation', () => {
-      service.fillTile('Railway');
+      service.fillTile(TileType.Railway);
       service.addCandidate(new LogicalCoordinate(1, 0));
 
-      service.fillTile('WaterStation');
+      service.fillTile(TileType.WaterStation);
       const edges = service.edges();
 
       const edgeAt1_1 = findEdge(edges, 1, 1);
@@ -479,13 +480,13 @@ describe('MapService', () => {
     });
 
     it('should calculate edges correctly for mixed tile types', () => {
-      service.fillTile('Grassland');
+      service.fillTile(TileType.Grassland);
       service.addCandidate(new LogicalCoordinate(1, 0));
 
-      service.fillTile('Forest');
+      service.fillTile(TileType.Forest);
       service.addCandidate(new LogicalCoordinate(1, 1));
 
-      service.fillTile('Field');
+      service.fillTile(TileType.Field);
       const edges = service.edges();
 
       expect(edges.length).toBeGreaterThan(0);
@@ -502,16 +503,16 @@ describe('MapService', () => {
     });
 
     it('should have multiple edges around a cluster of tiles', () => {
-      service.fillTile('Grassland');
+      service.fillTile(TileType.Grassland);
       service.addCandidate(new LogicalCoordinate(1, 0));
 
-      service.fillTile('Grassland');
+      service.fillTile(TileType.Grassland);
       service.addCandidate(new LogicalCoordinate(1, 1));
 
-      service.fillTile('Grassland');
+      service.fillTile(TileType.Grassland);
       service.addCandidate(new LogicalCoordinate(0, 1));
 
-      service.fillTile('Grassland');
+      service.fillTile(TileType.Grassland);
       const edges = service.edges();
 
       expect(edges.length).toBeGreaterThanOrEqual(3);
@@ -542,13 +543,13 @@ describe('MapService', () => {
     it('should handle full game workflow', () => {
       service.reset();
 
-      service.fillTile('Grassland');
+      service.fillTile(TileType.Grassland);
       expect(service.candidate().isComplete()).toBe(true);
 
       service.addCandidate(new LogicalCoordinate(1, 0));
       expect(service.tiles()).toHaveLength(2);
 
-      service.fillTile('Forest');
+      service.fillTile(TileType.Forest);
       service.addCandidate(new LogicalCoordinate(2, 0));
       expect(service.tiles()).toHaveLength(3);
 

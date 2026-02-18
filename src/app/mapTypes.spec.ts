@@ -12,19 +12,19 @@ import { describe, expect, it } from 'vitest';
 describe('mapTypes', () => {
   describe('TileType', () => {
     it('should have all expected tile types', () => {
-      const expectedTypes: TileType[] = [
-        'Unknown',
-        'Grassland',
-        'Forest',
-        'Field',
-        'Town',
-        'River',
-        'Lake',
-        'Railway',
-        'WaterStation',
+      const expectedTypes = [
+        TileType.Unknown,
+        TileType.Grassland,
+        TileType.Forest,
+        TileType.Field,
+        TileType.Town,
+        TileType.River,
+        TileType.Lake,
+        TileType.Railway,
+        TileType.WaterStation,
       ];
       expectedTypes.forEach((type) => {
-        expect(type).toBeTruthy();
+        expect(type).toBeGreaterThanOrEqual(0);
       });
     });
   });
@@ -142,53 +142,53 @@ describe('mapTypes', () => {
       });
 
       it('should accept initial items', () => {
-        const tile = new Tile(['Grassland', 'Forest']);
-        expect(tile.getItem(0)).toBe('Grassland');
-        expect(tile.getItem(1)).toBe('Forest');
-        expect(tile.getItem(2)).toBe('Unknown');
+        const tile = new Tile([TileType.Grassland, TileType.Forest]);
+        expect(tile.getItem(0)).toBe(TileType.Grassland);
+        expect(tile.getItem(1)).toBe(TileType.Forest);
+        expect(tile.getItem(2)).toBe(TileType.Unknown);
         expect(tile.isEmpty()).toBe(false);
         expect(tile.isComplete()).toBe(false);
       });
 
       it('should create a complete tile', () => {
         const tile = new Tile([
-          'Grassland',
-          'Forest',
-          'Grassland',
-          'Field',
-          'Field',
-          'Railway',
+          TileType.Grassland,
+          TileType.Forest,
+          TileType.Grassland,
+          TileType.Field,
+          TileType.Field,
+          TileType.Railway,
         ]);
-        expect(tile.getItem(0)).toBe('Grassland');
-        expect(tile.getItem(1)).toBe('Forest');
-        expect(tile.getItem(2)).toBe('Grassland');
-        expect(tile.getItem(3)).toBe('Field');
-        expect(tile.getItem(4)).toBe('Field');
-        expect(tile.getItem(5)).toBe('Railway');
-        expect(tile.getItem(6)).toBe('Unknown');
+        expect(tile.getItem(0)).toBe(TileType.Grassland);
+        expect(tile.getItem(1)).toBe(TileType.Forest);
+        expect(tile.getItem(2)).toBe(TileType.Grassland);
+        expect(tile.getItem(3)).toBe(TileType.Field);
+        expect(tile.getItem(4)).toBe(TileType.Field);
+        expect(tile.getItem(5)).toBe(TileType.Railway);
+        expect(tile.getItem(6)).toBe(TileType.Unknown);
         expect(tile.isComplete()).toBe(true);
         expect(tile.isEmpty()).toBe(false);
       });
 
       it('should truncate items to 6', () => {
         const items: TileType[] = [
-          'Grassland',
-          'Forest',
-          'Field',
-          'Town',
-          'River',
-          'Lake',
-          'Railway',
-          'WaterStation',
+          TileType.Grassland,
+          TileType.Forest,
+          TileType.Field,
+          TileType.Town,
+          TileType.River,
+          TileType.Lake,
+          TileType.Railway,
+          TileType.WaterStation,
         ];
         const tile = new Tile(items);
-        expect(tile.getItem(0)).toBe('Grassland');
-        expect(tile.getItem(1)).toBe('Forest');
-        expect(tile.getItem(2)).toBe('Field');
-        expect(tile.getItem(3)).toBe('Town');
-        expect(tile.getItem(4)).toBe('River');
-        expect(tile.getItem(5)).toBe('Lake');
-        expect(tile.getItem(6)).toBe('Unknown');
+        expect(tile.getItem(0)).toBe(TileType.Grassland);
+        expect(tile.getItem(1)).toBe(TileType.Forest);
+        expect(tile.getItem(2)).toBe(TileType.Field);
+        expect(tile.getItem(3)).toBe(TileType.Town);
+        expect(tile.getItem(4)).toBe(TileType.River);
+        expect(tile.getItem(5)).toBe(TileType.Lake);
+        expect(tile.getItem(6)).toBe(TileType.Unknown);
         expect(tile.isComplete()).toBe(true);
         expect(tile.isEmpty()).toBe(false);
       });
@@ -196,11 +196,11 @@ describe('mapTypes', () => {
 
     describe('singleTile', () => {
       it('should create tile with same type on all sides', () => {
-        const tile = Tile.singleTile('Forest');
+        const tile = Tile.singleTile(TileType.Forest);
         expect(tile.isComplete()).toBe(true);
         expect(tile.isEmpty()).toBe(false);
         for (let i = 0; i < 6; i++) {
-          expect(tile.getItem(i)).toBe('Forest');
+          expect(tile.getItem(i)).toBe(TileType.Forest);
         }
       });
     });
@@ -208,38 +208,38 @@ describe('mapTypes', () => {
     describe('add', () => {
       it('should add item to tile', () => {
         const tile = new Tile();
-        const newTile = tile.add('Forest');
-        expect(newTile.getItem(0)).toBe('Forest');
+        const newTile = tile.add(TileType.Forest);
+        expect(newTile.getItem(0)).toBe(TileType.Forest);
       });
 
       it('should throw error when tile is full', () => {
-        const tile = Tile.singleTile('Forest');
-        expect(() => tile.add('Grassland')).toThrow('Tile is full');
+        const tile = Tile.singleTile(TileType.Forest);
+        expect(() => tile.add(TileType.Grassland)).toThrow('Tile is full');
       });
 
       it('should not mutate original tile', () => {
         const tile = new Tile();
-        tile.add('Forest');
+        tile.add(TileType.Forest);
         expect(tile.isEmpty()).toBe(true);
       });
     });
 
     describe('fill', () => {
       it('should fill tile with specified type', () => {
-        const tile = new Tile(['Grassland']);
-        const filled = tile.fill('Forest');
+        const tile = new Tile([TileType.Grassland]);
+        const filled = tile.fill(TileType.Forest);
         expect(filled.isComplete()).toBe(true);
-        expect(filled.getItem(0)).toBe('Grassland');
-        expect(filled.getItem(1)).toBe('Forest');
-        expect(filled.getItem(2)).toBe('Forest');
-        expect(filled.getItem(3)).toBe('Forest');
-        expect(filled.getItem(4)).toBe('Forest');
-        expect(filled.getItem(5)).toBe('Forest');
+        expect(filled.getItem(0)).toBe(TileType.Grassland);
+        expect(filled.getItem(1)).toBe(TileType.Forest);
+        expect(filled.getItem(2)).toBe(TileType.Forest);
+        expect(filled.getItem(3)).toBe(TileType.Forest);
+        expect(filled.getItem(4)).toBe(TileType.Forest);
+        expect(filled.getItem(5)).toBe(TileType.Forest);
       });
 
       it('should not mutate original tile', () => {
-        const tile = new Tile(['Grassland']);
-        tile.fill('Forest');
+        const tile = new Tile([TileType.Grassland]);
+        tile.fill(TileType.Forest);
         expect(tile.isComplete()).toBe(false);
       });
     });
@@ -247,48 +247,48 @@ describe('mapTypes', () => {
     describe('rotate', () => {
       it('should rotate tile clockwise', () => {
         const tile = new Tile([
-          'Grassland',
-          'Forest',
-          'Field',
-          'Town',
-          'River',
-          'Lake',
+          TileType.Grassland,
+          TileType.Forest,
+          TileType.Field,
+          TileType.Town,
+          TileType.River,
+          TileType.Lake,
         ]);
         const rotated = tile.rotate(1);
-        expect(rotated.getItem(0)).toBe('Lake');
-        expect(rotated.getItem(1)).toBe('Grassland');
-        expect(rotated.getItem(2)).toBe('Forest');
-        expect(rotated.getItem(3)).toBe('Field');
-        expect(rotated.getItem(4)).toBe('Town');
-        expect(rotated.getItem(5)).toBe('River');
+        expect(rotated.getItem(0)).toBe(TileType.Lake);
+        expect(rotated.getItem(1)).toBe(TileType.Grassland);
+        expect(rotated.getItem(2)).toBe(TileType.Forest);
+        expect(rotated.getItem(3)).toBe(TileType.Field);
+        expect(rotated.getItem(4)).toBe(TileType.Town);
+        expect(rotated.getItem(5)).toBe(TileType.River);
       });
 
       it('should rotate tile counterclockwise', () => {
         const tile = new Tile([
-          'Grassland',
-          'Forest',
-          'Field',
-          'Town',
-          'River',
-          'Lake',
+          TileType.Grassland,
+          TileType.Forest,
+          TileType.Field,
+          TileType.Town,
+          TileType.River,
+          TileType.Lake,
         ]);
         const rotated = tile.rotate(-1);
-        expect(rotated.getItem(0)).toBe('Forest');
-        expect(rotated.getItem(1)).toBe('Field');
-        expect(rotated.getItem(2)).toBe('Town');
-        expect(rotated.getItem(3)).toBe('River');
-        expect(rotated.getItem(4)).toBe('Lake');
-        expect(rotated.getItem(5)).toBe('Grassland');
+        expect(rotated.getItem(0)).toBe(TileType.Forest);
+        expect(rotated.getItem(1)).toBe(TileType.Field);
+        expect(rotated.getItem(2)).toBe(TileType.Town);
+        expect(rotated.getItem(3)).toBe(TileType.River);
+        expect(rotated.getItem(4)).toBe(TileType.Lake);
+        expect(rotated.getItem(5)).toBe(TileType.Grassland);
       });
 
       it('should rotate 6 times to get original', () => {
         const tile = new Tile([
-          'Grassland',
-          'Forest',
-          'Field',
-          'Town',
-          'River',
-          'Lake',
+          TileType.Grassland,
+          TileType.Forest,
+          TileType.Field,
+          TileType.Town,
+          TileType.River,
+          TileType.Lake,
         ]);
         let rotated = tile;
         for (let i = 0; i < 6; i++) {
@@ -301,27 +301,27 @@ describe('mapTypes', () => {
 
       it('should not mutate original tile', () => {
         const tile = new Tile([
-          'Grassland',
-          'Forest',
-          'Field',
-          'Town',
-          'River',
-          'Lake',
+          TileType.Grassland,
+          TileType.Forest,
+          TileType.Field,
+          TileType.Town,
+          TileType.River,
+          TileType.Lake,
         ]);
         tile.rotate(1);
-        expect(tile.getItem(0)).toBe('Grassland');
+        expect(tile.getItem(0)).toBe(TileType.Grassland);
       });
     });
 
     describe('getAllRotations', () => {
       it('should return 6 different rotations', () => {
         const tile = new Tile([
-          'Grassland',
-          'Forest',
-          'Field',
-          'Town',
-          'River',
-          'Lake',
+          TileType.Grassland,
+          TileType.Forest,
+          TileType.Field,
+          TileType.Town,
+          TileType.River,
+          TileType.Lake,
         ]);
         const rotations = tile.getAllRotations();
         expect(rotations).toHaveLength(6);
@@ -342,21 +342,21 @@ describe('mapTypes', () => {
 
     describe('serialize', () => {
       it('should return array of items', () => {
-        const items: TileType[] = ['Grassland', 'Forest'];
+        const items: TileType[] = [TileType.Grassland, TileType.Forest];
         const tile = new Tile(items);
-        expect(tile.serialize()).toEqual(items);
+        expect(tile.serialize()).toEqual([TileType.Grassland, TileType.Forest]);
       });
 
       it('should return copy of array', () => {
         const tile = new Tile([
-          'Grassland',
-          'Forest',
-          'Field',
-          'Railway',
-          'Railway',
+          TileType.Grassland,
+          TileType.Forest,
+          TileType.Field,
+          TileType.Railway,
+          TileType.Railway,
         ]);
         const serialized = tile.serialize();
-        serialized.push('Field');
+        serialized.push(TileType.Field);
         expect(tile.isComplete()).toBe(false);
       });
     });

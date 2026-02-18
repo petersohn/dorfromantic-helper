@@ -2,7 +2,7 @@
   @for (key of tileKeys(); track key) {
     @if (tileTypes[key].normal || tileTypes[key].fill) {
       <div>
-        {{ key }}
+        {{ tileTypes[key].name }}
       </div>
       @if (tileTypes[key].normal) {
         <button

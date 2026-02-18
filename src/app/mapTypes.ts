@@ -1,13 +1,14 @@
-export type TileType =
-  | 'Unknown'
-  | 'Grassland'
-  | 'Forest'
-  | 'Field'
-  | 'Town'
-  | 'River'
-  | 'Lake'
-  | 'Railway'
-  | 'WaterStation';
+export enum TileType {
+  Unknown = 0,
+  Grassland = 1,
+  Forest = 2,
+  Field = 3,
+  Town = 4,
+  River = 5,
+  Lake = 6,
+  Railway = 7,
+  WaterStation = 8,
+}
 
 export class CoordinateBase {
   constructor(
@@ -95,7 +96,7 @@ export class Tile {
 
   public getItem(id: number): TileType {
     if (id >= this.items.length) {
-      return 'Unknown';
+      return TileType.Unknown;
     }
     return this.items[id];
   }
@@ -163,16 +164,56 @@ export interface ItemBase<T, CoordinateType> {
 export type LogicalItem<T> = ItemBase<T, LogicalCoordinate>;
 export type PhysicalItem<T> = ItemBase<T, PhysicalCoordinate>;
 
-export type TileConfig = { normal: boolean; fill: boolean; color: string };
+export type TileConfig = {
+  name: string;
+  normal: boolean;
+  fill: boolean;
+  color: string;
+};
 
 export const tileTypes: { [key in TileType]: TileConfig } = {
-  Unknown: { normal: false, fill: false, color: '#aaa' },
-  Grassland: { normal: true, fill: true, color: '#91d63e' },
-  Forest: { normal: true, fill: true, color: '#1f771a' },
-  Field: { normal: true, fill: true, color: '#d8d515' },
-  Town: { normal: true, fill: true, color: '#ce5c73' },
-  River: { normal: true, fill: true, color: '#0d99c4' },
-  Lake: { normal: true, fill: true, color: '#64c3e0' },
-  Railway: { normal: true, fill: true, color: '#91632b' },
-  WaterStation: { normal: false, fill: true, color: '#14e8b6' },
+  [TileType.Unknown]: {
+    name: 'Unknown',
+    normal: false,
+    fill: false,
+    color: '#aaa',
+  },
+  [TileType.Grassland]: {
+    name: 'Grassland',
+    normal: true,
+    fill: true,
+    color: '#91d63e',
+  },
+  [TileType.Forest]: {
+    name: 'Forest',
+    normal: true,
+    fill: true,
+    color: '#1f771a',
+  },
+  [TileType.Field]: {
+    name: 'Field',
+    normal: true,
+    fill: true,
+    color: '#d8d515',
+  },
+  [TileType.Town]: { name: 'Town', normal: true, fill: true, color: '#ce5c73' },
+  [TileType.River]: {
+    name: 'River',
+    normal: true,
+    fill: true,
+    color: '#0d99c4',
+  },
+  [TileType.Lake]: { name: 'Lake', normal: true, fill: true, color: '#64c3e0' },
+  [TileType.Railway]: {
+    name: 'Railway',
+    normal: true,
+    fill: true,
+    color: '#91632b',
+  },
+  [TileType.WaterStation]: {
+    name: 'Water Station',
+    normal: false,
+    fill: true,
+    color: '#14e8b6',
+  },
 };
