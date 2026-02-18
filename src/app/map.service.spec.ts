@@ -1,6 +1,11 @@
 import { describe, expect, it, beforeEach } from 'vitest';
 import { MapService, tileMapKey } from './map.service';
-import { LogicalCoordinate, PhysicalCoordinate, Tile } from './mapTypes';
+import {
+  Edge,
+  LogicalCoordinate,
+  LogicalItem,
+  PhysicalCoordinate,
+} from './mapTypes';
 import { DisplayPosition } from './displayPosition';
 
 describe('MapService', () => {
@@ -11,6 +16,10 @@ describe('MapService', () => {
     service.setWindowSize(new PhysicalCoordinate(800, 600));
     service.init();
   });
+
+  function findEdge(edges: LogicalItem<Edge>[], x: number, y: number) {
+    return edges.find((e) => e.coordinate.x === x && e.coordinate.y === y);
+  }
 
   describe('tileMapKey', () => {
     it.each([
@@ -394,6 +403,138 @@ describe('MapService', () => {
 
       const edges = service.edges();
       expect(edges.length).toBeGreaterThan(0);
+    });
+
+    it('should calculate edges at exact coordinates after placing one tile', () => {
+      service.fillTile('Grassland');
+      service.addCandidate(new LogicalCoordinate(1, 0));
+
+      service.fillTile('Grassland');
+      const edges = service.edges();
+
+      const edgeAt1_1 = findEdge(edges, 1, 1);
+      expect(edgeAt1_1).toBeDefined();
+      expect(edgeAt1_1!.item.all).toBe(2);
+      expect(edgeAt1_1!.item.good).toBe(2);
+    });
+
+    it('should calculate edges at exact coordinates after placing two tiles', () => {
+      service.fillTile('Grassland');
+      service.addCandidate(new LogicalCoordinate(1, 0));
+
+      service.fillTile('Grassland');
+      service.addCandidate(new LogicalCoordinate(1, 1));
+
+      service.fillTile('Grassland');
+      const edges = service.edges();
+
+      const edgeAt0_1 = findEdge(edges, 0, 1);
+      expect(edgeAt0_1).toBeDefined();
+      expect(edgeAt0_1!.item.all).toBe(2);
+      expect(edgeAt0_1!.item.good).toBe(2);
+
+      const edgeAt2_0 = findEdge(edges, 2, 0);
+      expect(edgeAt2_0).toBeDefined();
+      expect(edgeAt2_0!.item.all).toBe(1);
+      expect(edgeAt2_0!.item.good).toBe(1);
+    });
+
+    it('should calculate edges for non-matching tiles', () => {
+      service.fillTile('Forest');
+      service.addCandidate(new LogicalCoordinate(1, 0));
+
+      service.fillTile('Grassland');
+      const edges = service.edges();
+
+      const edgeAt1_1 = findEdge(edges, 1, 1);
+      expect(edgeAt1_1).toBeDefined();
+      expect(edgeAt1_1!.item.all).toBe(2);
+      expect(edgeAt1_1!.item.good).toBe(1);
+    });
+
+    it('should calculate edge for River matching with Lake', () => {
+      service.fillTile('River');
+      service.addCandidate(new LogicalCoordinate(1, 0));
+
+      service.fillTile('Lake');
+      const edges = service.edges();
+
+      const edgeAt1_1 = findEdge(edges, 1, 1);
+      expect(edgeAt1_1).toBeDefined();
+      expect(edgeAt1_1!.item.all).toBe(2);
+      expect(edgeAt1_1!.item.good).toBe(2);
+    });
+
+    it('should calculate edge for Railway matching with WaterStation', () => {
+      service.fillTile('Railway');
+      service.addCandidate(new LogicalCoordinate(1, 0));
+
+      service.fillTile('WaterStation');
+      const edges = service.edges();
+
+      const edgeAt1_1 = findEdge(edges, 1, 1);
+      expect(edgeAt1_1).toBeDefined();
+      expect(edgeAt1_1!.item.all).toBe(2);
+      expect(edgeAt1_1!.item.good).toBe(2);
+    });
+
+    it('should calculate edges correctly for mixed tile types', () => {
+      service.fillTile('Grassland');
+      service.addCandidate(new LogicalCoordinate(1, 0));
+
+      service.fillTile('Forest');
+      service.addCandidate(new LogicalCoordinate(1, 1));
+
+      service.fillTile('Field');
+      const edges = service.edges();
+
+      expect(edges.length).toBeGreaterThan(0);
+
+      const edgeAt2_0 = findEdge(edges, 2, 0);
+      expect(edgeAt2_0).toBeDefined();
+      expect(edgeAt2_0!.item.all).toBe(1);
+      expect(edgeAt2_0!.item.good).toBe(0);
+
+      const edgeAt0_1 = findEdge(edges, 0, 1);
+      expect(edgeAt0_1).toBeDefined();
+      expect(edgeAt0_1!.item.all).toBe(2);
+      expect(edgeAt0_1!.item.good).toBe(0);
+    });
+
+    it('should have multiple edges around a cluster of tiles', () => {
+      service.fillTile('Grassland');
+      service.addCandidate(new LogicalCoordinate(1, 0));
+
+      service.fillTile('Grassland');
+      service.addCandidate(new LogicalCoordinate(1, 1));
+
+      service.fillTile('Grassland');
+      service.addCandidate(new LogicalCoordinate(0, 1));
+
+      service.fillTile('Grassland');
+      const edges = service.edges();
+
+      expect(edges.length).toBeGreaterThanOrEqual(3);
+
+      const edgeAt2_0 = findEdge(edges, 2, 0);
+      expect(edgeAt2_0).toBeDefined();
+      expect(edgeAt2_0!.item.all).toBe(1);
+      expect(edgeAt2_0!.item.good).toBe(1);
+
+      const edgeAt2_1 = findEdge(edges, 2, 1);
+      expect(edgeAt2_1).toBeDefined();
+      expect(edgeAt2_1!.item.all).toBe(2);
+      expect(edgeAt2_1!.item.good).toBe(2);
+
+      const edgeAtMinus1_0 = findEdge(edges, -1, 0);
+      expect(edgeAtMinus1_0).toBeDefined();
+      expect(edgeAtMinus1_0!.item.all).toBe(2);
+      expect(edgeAtMinus1_0!.item.good).toBe(2);
+
+      const edgeAt0_m1 = findEdge(edges, 0, -1);
+      expect(edgeAt0_m1).toBeDefined();
+      expect(edgeAt0_m1!.item.all).toBe(1);
+      expect(edgeAt0_m1!.item.good).toBe(1);
     });
   });
 
