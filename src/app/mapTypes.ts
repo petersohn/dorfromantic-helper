@@ -165,7 +165,7 @@ export type LogicalItem<T> = ItemBase<T, LogicalCoordinate>;
 export type PhysicalItem<T> = ItemBase<T, PhysicalCoordinate>;
 
 export type TileConfig = {
-  name: string;
+  displayName: string;
   normal: boolean;
   fill: boolean;
   color: string;
@@ -173,45 +173,55 @@ export type TileConfig = {
 
 export const tileTypes: { [key in TileType]: TileConfig } = {
   [TileType.Unknown]: {
-    name: 'Unknown',
+    displayName: 'Unknown',
     normal: false,
     fill: false,
     color: '#aaa',
   },
   [TileType.Grassland]: {
-    name: 'Grassland',
+    displayName: 'Grassland',
     normal: true,
     fill: true,
     color: '#91d63e',
   },
   [TileType.Forest]: {
-    name: 'Forest',
+    displayName: 'Forest',
     normal: true,
     fill: true,
     color: '#1f771a',
   },
   [TileType.Field]: {
-    name: 'Field',
+    displayName: 'Field',
     normal: true,
     fill: true,
     color: '#d8d515',
   },
-  [TileType.Town]: { name: 'Town', normal: true, fill: true, color: '#ce5c73' },
+  [TileType.Town]: {
+    displayName: 'Town',
+    normal: true,
+    fill: true,
+    color: '#ce5c73',
+  },
   [TileType.River]: {
-    name: 'River',
+    displayName: 'River',
     normal: true,
     fill: true,
     color: '#0d99c4',
   },
-  [TileType.Lake]: { name: 'Lake', normal: true, fill: true, color: '#64c3e0' },
+  [TileType.Lake]: {
+    displayName: 'Lake',
+    normal: true,
+    fill: true,
+    color: '#64c3e0',
+  },
   [TileType.Railway]: {
-    name: 'Railway',
+    displayName: 'Railway',
     normal: true,
     fill: true,
     color: '#91632b',
   },
   [TileType.WaterStation]: {
-    name: 'Water Station',
+    displayName: 'Water Station',
     normal: false,
     fill: true,
     color: '#14e8b6',
