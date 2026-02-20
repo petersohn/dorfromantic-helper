@@ -28,6 +28,7 @@ import {
 } from './drawHelper';
 import { DisplayPosition } from './displayPosition';
 import { MapService } from './map.service';
+import { DebugService } from './debug.service';
 
 @Component({
   selector: 'mapuu',
@@ -40,6 +41,7 @@ export class MapComponent implements OnInit {
   private parent = inject(ElementRef<HTMLElement>);
   private canvas = viewChild.required<ElementRef<HTMLCanvasElement>>('canvas');
   private mapService = inject(MapService);
+  private debugService = inject(DebugService);
   private candidateShowPosition = signal<LogicalCoordinate | null>(null);
 
   private candidateShow = computed<LogicalItem<Tile> | null>(() => {
@@ -259,8 +261,8 @@ export class MapComponent implements OnInit {
       ctx.globalAlpha = 1.0;
     }
 
-    if (this.mapService.showDebug()) {
-      const trace = this.mapService.summaryTrace();
+    if (this.debugService.showDebug()) {
+      const trace = this.debugService.summaryTrace();
       if (trace.length > 0) {
         ctx.strokeStyle = 'red';
         ctx.lineWidth = 1;
@@ -275,7 +277,7 @@ export class MapComponent implements OnInit {
         }
         ctx.stroke();
 
-        const index = this.mapService.summaryTraceIndex();
+        const index = this.debugService.summaryTraceIndex();
         console.log(index, trace.length);
         if (index < trace.length) {
           ctx.fillStyle = 'red';

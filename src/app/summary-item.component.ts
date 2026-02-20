@@ -12,6 +12,7 @@ import { drawEdge, logical2Screen } from './drawHelper';
 import { LogicalCoordinate, PhysicalCoordinate, Edge } from './mapTypes';
 import { CommonModule } from '@angular/common';
 import { MapService, tileMapKey } from './map.service';
+import { DebugService } from './debug.service';
 import { DisplayPosition } from './displayPosition';
 import { hashList } from './hash';
 
@@ -27,6 +28,7 @@ export class SummaryItemComponent {
   private readonly canvas =
     viewChild.required<ElementRef<HTMLCanvasElement>>('canvas');
   private readonly mapService = inject(MapService);
+  private readonly debugService = inject(DebugService);
 
   public edgeCount = input.required<number>();
   public edges = input.required<LogicalCoordinate[]>();
@@ -105,8 +107,8 @@ export class SummaryItemComponent {
         this.jumpList.length;
     }
 
-    this.mapService.summaryTrace.set(this.jumpList);
-    this.mapService.summaryTraceIndex.set(this.jumpIndex);
+    this.debugService.summaryTrace.set(this.jumpList);
+    this.debugService.summaryTraceIndex.set(this.jumpIndex);
 
     const coord = this.jumpList[this.jumpIndex];
     this.mapService.displayPosition.update((dp) => {

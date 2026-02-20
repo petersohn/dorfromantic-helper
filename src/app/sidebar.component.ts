@@ -7,6 +7,7 @@ import {
   viewChild,
 } from '@angular/core';
 import { MapService, tileMapKey } from './map.service';
+import { DebugService } from './debug.service';
 import { LogicalCoordinate, TileType, tileTypes } from './mapTypes';
 import { NgStyle } from '@angular/common';
 import { CandidateDisplayComponent } from './candidateDisplay.component';
@@ -27,6 +28,7 @@ type SummaryItem = {
 })
 export class SidebarComponent {
   private readonly mapService = inject(MapService);
+  private readonly debugService = inject(DebugService);
   private readonly downloader =
     viewChild<ElementRef<HTMLAnchorElement>>('downloader');
   private readonly uploader =
@@ -44,7 +46,7 @@ export class SidebarComponent {
   public canAddTile = computed(() => !this.mapService.candidate().isComplete());
   public canClearTile = computed(() => !this.mapService.candidate().isEmpty());
   public summaryItems = computed(() => this.calculateSummary());
-  public showDebug = this.mapService.showDebug;
+  public showDebug = this.debugService.showDebug;
 
   public onDebugClick(event: MouseEvent) {
     this.showDebug.set((event.target as HTMLInputElement).checked);
