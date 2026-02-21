@@ -1,7 +1,7 @@
 <div class="controls">
   @for (key of tileKeys(); track key) {
     @if (tileTypes[key].normal || tileTypes[key].fill) {
-      <div>
+      <div class="label">
         {{ tileTypes[key].displayName }}
       </div>
       @if (tileTypes[key].normal) {
@@ -69,7 +69,7 @@
     id="debugCheckbox"
     [checked]="showDebug()"
     (click)="onDebugClick($event)"
-  /><label for="debugCheckbox">Debug</label>
+  /><label for="debugCheckbox" class="label">Debug</label>
 </div>
 
 <a #downloader hidden download="game.json"></a>

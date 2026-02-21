@@ -5,7 +5,7 @@
   (mousedown)="onMouseDown($event)"
   (contextmenu)="onContextMenu($event)"
 ></canvas>
-<div class="count" [ngClass]="{ marked: markCount() != 0 }">
+<div class="count label" [ngClass]="{ marked: markCount() != 0 }">
   @if (markCount() != 0) {
     {{ markCount() }}/{{ count() }}
   } @else {
