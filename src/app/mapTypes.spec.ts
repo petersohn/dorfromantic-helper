@@ -101,6 +101,31 @@ describe('mapTypes', () => {
         );
       });
     });
+
+    describe('distance', () => {
+      it('should return 0 for same coordinate', () => {
+        const coord = new PhysicalCoordinate(10, 20);
+        expect(coord.distance(coord)).toBe(0);
+      });
+
+      it('should return correct distance', () => {
+        const coord1 = new PhysicalCoordinate(3, 4);
+        const coord2 = new PhysicalCoordinate(0, 0);
+        expect(coord1.distance(coord2)).toBe(5);
+      });
+
+      it('should be symmetric', () => {
+        const coord1 = new PhysicalCoordinate(10, 20);
+        const coord2 = new PhysicalCoordinate(5, 10);
+        expect(coord1.distance(coord2)).toBe(coord2.distance(coord1));
+      });
+
+      it('should handle non-integer distances', () => {
+        const coord1 = new PhysicalCoordinate(1, 1);
+        const coord2 = new PhysicalCoordinate(0, 0);
+        expect(coord1.distance(coord2)).toBeCloseTo(Math.sqrt(2));
+      });
+    });
   });
 
   describe('LogicalCoordinate', () => {
