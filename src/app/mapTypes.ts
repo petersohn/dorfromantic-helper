@@ -17,6 +17,16 @@ export class CoordinateBase {
   ) {}
 }
 
+/**
+  * Represents a coordinate in a cartesian coordinate system. Values can be real.
+
+  * The following coordinate systems use PhysicalCoordinate:
+  * - Screen: represents a virtual coordinate system where the origin is the
+  *   center of the tile at the (0, 0) logical coordinate, and 1 unit is the
+  *   length of one edge of the hexagon.
+  * - Physical: represents an actual pixel coordinate on the canvas. The origin
+  *   is the top left of the canvas and 1 unit is 1 pixel.
+  */
 export class PhysicalCoordinate extends CoordinateBase {
   public static fromMouseEvent(
     parent: HTMLElement,
@@ -51,9 +61,26 @@ export class PhysicalCoordinate extends CoordinateBase {
   public div(value: number): PhysicalCoordinate {
     return new PhysicalCoordinate(this.x / value, this.y / value);
   }
+
+  public distanceSquared(rhs: PhysicalCoordinate): number {
+    const diff = this.sub(rhs);
+    return diff.x * diff.x + diff.y * diff.y;
+  }
 }
 
+/**
+  * Represents a coordinate in a hexagonal coordinate system. Values are always
+  * integers.
+
+  * - Along the x axis, hexagons touch with their sides.
+  * - Along the y axis, hexagons in every second row touch with their vertices.
+  * - Every odd row is shifted half a coordinate to the left.
+  */
 export class LogicalCoordinate extends CoordinateBase {
+  /**
+   * Returns the neighbors of the hexagon in a clockwise order starting from
+   * top right.
+   */
   public neighbors(): LogicalCoordinate[] {
     return this.y % 2 == 0
       ? [

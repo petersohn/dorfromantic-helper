@@ -15,6 +15,7 @@ import { MapService, tileMapKey } from './map.service';
 import { DebugService } from './debug.service';
 import { DisplayPosition } from './displayPosition';
 import { hashList } from './hash';
+import { twoOptJumpList } from './jumpList';
 
 @Component({
   selector: 'summary-item',
@@ -125,37 +126,13 @@ export class SummaryItemComponent {
       return false;
     }
 
-    this.jumpList = [];
-    this.jumpIndex = 0;
-
-    type Accumulator = {
-      diff: number;
-      index: number;
-    };
-
-    let coord = this.mapService
+    const currentPosition = this.mapService
       .displayPosition()
       .physical2Screen(this.mapService.getWindowSize().div(2));
-    const trace: PhysicalCoordinate[] = [];
-    while (this.edgesToSort.length !== 0) {
-      const { index } = this.edgesToSort.reduce(
-        (acc: Accumulator | null, curr: LogicalCoordinate, index: number) => {
-          const diff = coord.sub(logical2Screen(curr));
-          const absdiff = diff.x * diff.x + diff.y * diff.y;
-          if (acc === null || absdiff < acc.diff) {
-            return { diff: absdiff, index };
-          } else {
-            return acc;
-          }
-        },
-        null,
-      )!;
 
-      const [best] = this.edgesToSort.splice(index, 1);
-      this.jumpList.push(best);
-      coord = logical2Screen(best);
-      trace.push(coord);
-    }
+    this.jumpList = twoOptJumpList(this.edgesToSort, currentPosition);
+    this.jumpIndex = 0;
+    this.edgesToSort = [];
 
     return true;
   }

@@ -80,6 +80,27 @@ describe('mapTypes', () => {
         expect(result.y).toBe(10);
       });
     });
+
+    describe('distanceSquared', () => {
+      it('should return 0 for same coordinate', () => {
+        const coord = new PhysicalCoordinate(10, 20);
+        expect(coord.distanceSquared(coord)).toBe(0);
+      });
+
+      it('should return correct squared distance', () => {
+        const coord1 = new PhysicalCoordinate(3, 4);
+        const coord2 = new PhysicalCoordinate(0, 0);
+        expect(coord1.distanceSquared(coord2)).toBe(25);
+      });
+
+      it('should be symmetric', () => {
+        const coord1 = new PhysicalCoordinate(10, 20);
+        const coord2 = new PhysicalCoordinate(5, 10);
+        expect(coord1.distanceSquared(coord2)).toBe(
+          coord2.distanceSquared(coord1),
+        );
+      });
+    });
   });
 
   describe('LogicalCoordinate', () => {
