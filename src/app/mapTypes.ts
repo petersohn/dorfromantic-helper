@@ -66,6 +66,10 @@ export class PhysicalCoordinate extends CoordinateBase {
     const diff = this.sub(rhs);
     return diff.x * diff.x + diff.y * diff.y;
   }
+
+  public distance(rhs: PhysicalCoordinate): number {
+    return Math.sqrt(this.distanceSquared(rhs));
+  }
 }
 
 /**

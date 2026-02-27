@@ -82,24 +82,30 @@ export function twoOptJumpList(
 }
 
 function twoOptOptimize(tour: LogicalCoordinate[]): LogicalCoordinate[] {
-  const n = tour.length;
   let improved = true;
 
   while (improved) {
-    improved = false;
+    improved = twoOptIteration(tour);
+  }
 
-    for (let i = 0; i < n - 1; i++) {
-      for (let j = i + 2; j < n; j++) {
-        const delta = calculateDelta(tour, i, j);
-        if (delta < 0) {
-          swapSegment(tour, i + 1, j);
-          improved = true;
-        }
+  return tour;
+}
+
+export function twoOptIteration(tour: LogicalCoordinate[]): boolean {
+  const n = tour.length;
+  let improved = false;
+
+  for (let i = 0; i < n - 1; i++) {
+    for (let j = i + 2; j < n; j++) {
+      const delta = calculateDelta(tour, i, j);
+      if (delta < 0) {
+        swapSegment(tour, i + 1, j);
+        improved = true;
       }
     }
   }
 
-  return tour;
+  return improved;
 }
 
 function calculateDelta(
@@ -114,13 +120,15 @@ function calculateDelta(
   const c = tour[j];
   const d = tour[(j + 1) % n];
 
+  // We need to use distance here instead of distanceSquared, because the sum of
+  // squares is not the same as the square of the sums.
   const currentDist =
-    logical2Screen(a).distanceSquared(logical2Screen(b)) +
-    logical2Screen(c).distanceSquared(logical2Screen(d));
+    logical2Screen(a).distance(logical2Screen(b)) +
+    logical2Screen(c).distance(logical2Screen(d));
 
   const newDist =
-    logical2Screen(a).distanceSquared(logical2Screen(c)) +
-    logical2Screen(b).distanceSquared(logical2Screen(d));
+    logical2Screen(a).distance(logical2Screen(c)) +
+    logical2Screen(b).distance(logical2Screen(d));
 
   return newDist - currentDist;
 }
