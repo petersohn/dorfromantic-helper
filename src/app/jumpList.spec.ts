@@ -1,5 +1,5 @@
 import { LogicalCoordinate, PhysicalCoordinate } from './mapTypes';
-import { twoOptIteration, twoOptJumpList } from './jumpList';
+import { twoOptIteration, twoOptJumpList } from './jumpListHelper';
 import { describe, expect, it } from 'vitest';
 import { logical2Screen } from './drawHelper';
 

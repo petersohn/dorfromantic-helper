@@ -8,78 +8,12 @@ import {
   input,
   viewChild,
 } from '@angular/core';
-import { drawEdge, logical2Screen } from './drawHelper';
+import { drawEdge } from './drawHelper';
 import { LogicalCoordinate, PhysicalCoordinate, Edge } from './mapTypes';
 import { CommonModule } from '@angular/common';
-import { MapService, tileMapKey } from './map.service';
+import { MapService } from './map.service';
 import { DebugService } from './debug.service';
-import { DisplayPosition } from './displayPosition';
-import { hashList } from './hash';
-import { twoOptJumpList } from './jumpList';
-
-export class JumpList {
-  private jumpList: LogicalCoordinate[] | null = null;
-  private jumpIndex = 0;
-  private edgesToSort: LogicalCoordinate[] = [];
-  private edgesHash: number | null = null;
-
-  constructor(
-    private mapService: MapService,
-    private debugService: DebugService,
-  ) {}
-
-  public setEdges(edges: LogicalCoordinate[]): void {
-    const hash = hashList(edges.map(tileMapKey));
-    if (this.edgesHash === hash) {
-      return;
-    }
-    this.edgesToSort = [...edges];
-    this.jumpList = null;
-    this.edgesHash = hash;
-  }
-
-  public cycleItems(direction: number) {
-    const isCalculated = this.calculate();
-    // jumpList cannot be null, but we have to make TypeScript happy.
-    if (this.jumpList === null || this.jumpList.length === 0) {
-      return;
-    }
-
-    if (!isCalculated) {
-      this.jumpIndex =
-        (this.jumpIndex + direction + this.jumpList.length) %
-        this.jumpList.length;
-    }
-
-    this.debugService.summaryTrace.set(this.jumpList);
-    this.debugService.summaryTraceIndex.set(this.jumpIndex);
-
-    const coord = this.jumpList[this.jumpIndex];
-    this.mapService.displayPosition.update((dp) => {
-      const physical = dp.screen2Physical(logical2Screen(coord));
-      return new DisplayPosition(
-        dp.offset.sub(physical).add(this.mapService.getWindowSize().div(2)),
-        dp.zoomLevel,
-      );
-    });
-  }
-
-  private calculate(): boolean {
-    if (this.jumpList !== null) {
-      return false;
-    }
-
-    const currentPosition = this.mapService
-      .displayPosition()
-      .physical2Screen(this.mapService.getWindowSize().div(2));
-
-    this.jumpList = twoOptJumpList(this.edgesToSort, currentPosition);
-    this.jumpIndex = 0;
-    this.edgesToSort = [];
-
-    return true;
-  }
-}
+import { JumpList } from './jumpList';
 
 @Component({
   selector: 'summary-item',

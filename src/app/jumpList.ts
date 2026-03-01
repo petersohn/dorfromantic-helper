@@ -1,157 +1,71 @@
-import { LogicalCoordinate, PhysicalCoordinate } from './mapTypes';
+import { DebugService } from './debug.service';
+import { DisplayPosition } from './displayPosition';
 import { logical2Screen } from './drawHelper';
+import { hashList } from './hash';
+import { twoOptJumpList } from './jumpListHelper';
+import { MapService, tileMapKey } from './map.service';
+import { LogicalCoordinate } from './mapTypes';
 
-export type JumpListAlgorithm = (
-  edges: LogicalCoordinate[],
-  currentPosition: PhysicalCoordinate,
-) => LogicalCoordinate[];
+export class JumpList {
+  private jumpList: LogicalCoordinate[] | null = null;
+  private jumpIndex = 0;
+  private edgesToSort: LogicalCoordinate[] = [];
+  private edgesHash: number | null = null;
 
-function swapSegment<T>(arr: T[], start: number, end: number): void {
-  while (start < end) {
-    const temp = arr[start];
-    arr[start] = arr[end];
-    arr[end] = temp;
-    start++;
-    end--;
-  }
-}
+  constructor(
+    private mapService: MapService,
+    private debugService: DebugService,
+  ) {}
 
-function greedyStep(
-  remaining: LogicalCoordinate[],
-  output: LogicalCoordinate[],
-  current: PhysicalCoordinate,
-): void {
-  if (remaining.length === 0) {
-    return;
-  }
-
-  let minIndex = 0;
-  let minDist = current.distanceSquared(logical2Screen(remaining[0]));
-
-  for (let i = 1; i < remaining.length; i++) {
-    const dist = current.distanceSquared(logical2Screen(remaining[i]));
-    if (dist < minDist) {
-      minDist = dist;
-      minIndex = i;
+  public setEdges(edges: LogicalCoordinate[]): void {
+    const hash = hashList(edges.map(tileMapKey));
+    if (this.edgesHash === hash) {
+      return;
     }
+    this.edgesToSort = [...edges];
+    this.jumpList = null;
+    this.edgesHash = hash;
   }
 
-  const best = remaining.splice(minIndex, 1)[0];
-  output.push(best);
-}
-
-function greedyFill(
-  edges: LogicalCoordinate[],
-  output: LogicalCoordinate[],
-  current: PhysicalCoordinate,
-): void {
-  const remaining = [...edges];
-
-  while (remaining.length > 0) {
-    greedyStep(remaining, output, current);
-    current = logical2Screen(output[output.length - 1]);
-  }
-}
-
-export function greedyJumpList(
-  edges: LogicalCoordinate[],
-  currentPosition: PhysicalCoordinate,
-): LogicalCoordinate[] {
-  if (edges.length === 0) {
-    return [];
-  }
-
-  const result: LogicalCoordinate[] = [];
-  greedyFill(edges, result, currentPosition);
-  return result;
-}
-
-export function twoOptJumpList(
-  edges: LogicalCoordinate[],
-  currentPosition: PhysicalCoordinate,
-): LogicalCoordinate[] {
-  if (edges.length <= 2) {
-    return [...edges];
-  }
-
-  const initialTour: LogicalCoordinate[] = [edges[0]];
-  greedyFill(edges.slice(1), initialTour, logical2Screen(edges[0]));
-
-  const optimized = twoOptOptimize(initialTour);
-  return rotateToStart(optimized, currentPosition);
-}
-
-function twoOptOptimize(tour: LogicalCoordinate[]): LogicalCoordinate[] {
-  let improved = true;
-
-  while (improved) {
-    improved = twoOptIteration(tour);
-  }
-
-  return tour;
-}
-
-export function twoOptIteration(tour: LogicalCoordinate[]): boolean {
-  const n = tour.length;
-  let improved = false;
-
-  for (let i = 0; i < n - 1; i++) {
-    for (let j = i + 2; j < n; j++) {
-      const delta = calculateDelta(tour, i, j);
-      if (delta < 0) {
-        swapSegment(tour, i + 1, j);
-        improved = true;
-      }
+  public cycleItems(direction: number) {
+    const isCalculated = this.calculate();
+    // jumpList cannot be null, but we have to make TypeScript happy.
+    if (this.jumpList === null || this.jumpList.length === 0) {
+      return;
     }
-  }
 
-  return improved;
-}
-
-function calculateDelta(
-  tour: LogicalCoordinate[],
-  i: number,
-  j: number,
-): number {
-  const n = tour.length;
-
-  const a = tour[i];
-  const b = tour[(i + 1) % n];
-  const c = tour[j];
-  const d = tour[(j + 1) % n];
-
-  // We need to use distance here instead of distanceSquared, because the sum of
-  // squares is not the same as the square of the sums.
-  const currentDist =
-    logical2Screen(a).distance(logical2Screen(b)) +
-    logical2Screen(c).distance(logical2Screen(d));
-
-  const newDist =
-    logical2Screen(a).distance(logical2Screen(c)) +
-    logical2Screen(b).distance(logical2Screen(d));
-
-  return newDist - currentDist;
-}
-
-function rotateToStart(
-  tour: LogicalCoordinate[],
-  currentPosition: PhysicalCoordinate,
-): LogicalCoordinate[] {
-  if (tour.length === 0) {
-    return tour;
-  }
-
-  let closestIndex = 0;
-  let closestDist = currentPosition.distanceSquared(logical2Screen(tour[0]));
-
-  for (let i = 1; i < tour.length; i++) {
-    const dist = currentPosition.distanceSquared(logical2Screen(tour[i]));
-    if (dist < closestDist) {
-      closestDist = dist;
-      closestIndex = i;
+    if (!isCalculated) {
+      this.jumpIndex =
+        (this.jumpIndex + direction + this.jumpList.length) %
+        this.jumpList.length;
     }
+
+    this.debugService.summaryTrace.set(this.jumpList);
+    this.debugService.summaryTraceIndex.set(this.jumpIndex);
+
+    const coord = this.jumpList[this.jumpIndex];
+    this.mapService.displayPosition.update((dp) => {
+      const physical = dp.screen2Physical(logical2Screen(coord));
+      return new DisplayPosition(
+        dp.offset.sub(physical).add(this.mapService.getWindowSize().div(2)),
+        dp.zoomLevel,
+      );
+    });
   }
 
-  const result = tour.slice(closestIndex).concat(tour.slice(0, closestIndex));
-  return result;
+  private calculate(): boolean {
+    if (this.jumpList !== null) {
+      return false;
+    }
+
+    const currentPosition = this.mapService
+      .displayPosition()
+      .physical2Screen(this.mapService.getWindowSize().div(2));
+
+    this.jumpList = twoOptJumpList(this.edgesToSort, currentPosition);
+    this.jumpIndex = 0;
+    this.edgesToSort = [];
+
+    return true;
+  }
 }
