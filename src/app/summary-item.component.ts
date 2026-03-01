@@ -17,6 +17,70 @@ import { DisplayPosition } from './displayPosition';
 import { hashList } from './hash';
 import { twoOptJumpList } from './jumpList';
 
+export class JumpList {
+  private jumpList: LogicalCoordinate[] | null = null;
+  private jumpIndex = 0;
+  private edgesToSort: LogicalCoordinate[] = [];
+  private edgesHash: number | null = null;
+
+  constructor(
+    private mapService: MapService,
+    private debugService: DebugService,
+  ) {}
+
+  public setEdges(edges: LogicalCoordinate[]): void {
+    const hash = hashList(edges.map(tileMapKey));
+    if (this.edgesHash === hash) {
+      return;
+    }
+    this.edgesToSort = [...edges];
+    this.jumpList = null;
+    this.edgesHash = hash;
+  }
+
+  public cycleItems(direction: number) {
+    const isCalculated = this.calculate();
+    // jumpList cannot be null, but we have to make TypeScript happy.
+    if (this.jumpList === null || this.jumpList.length === 0) {
+      return;
+    }
+
+    if (!isCalculated) {
+      this.jumpIndex =
+        (this.jumpIndex + direction + this.jumpList.length) %
+        this.jumpList.length;
+    }
+
+    this.debugService.summaryTrace.set(this.jumpList);
+    this.debugService.summaryTraceIndex.set(this.jumpIndex);
+
+    const coord = this.jumpList[this.jumpIndex];
+    this.mapService.displayPosition.update((dp) => {
+      const physical = dp.screen2Physical(logical2Screen(coord));
+      return new DisplayPosition(
+        dp.offset.sub(physical).add(this.mapService.getWindowSize().div(2)),
+        dp.zoomLevel,
+      );
+    });
+  }
+
+  private calculate(): boolean {
+    if (this.jumpList !== null) {
+      return false;
+    }
+
+    const currentPosition = this.mapService
+      .displayPosition()
+      .physical2Screen(this.mapService.getWindowSize().div(2));
+
+    this.jumpList = twoOptJumpList(this.edgesToSort, currentPosition);
+    this.jumpIndex = 0;
+    this.edgesToSort = [];
+
+    return true;
+  }
+}
+
 @Component({
   selector: 'summary-item',
   standalone: true,
@@ -33,25 +97,18 @@ export class SummaryItemComponent {
 
   public edgeCount = input.required<number>();
   public edges = input.required<LogicalCoordinate[]>();
+  public marks = input.required<LogicalCoordinate[]>();
   public count = computed(() => this.edges().length);
-  public markCount = input.required<number>();
+  public markCount = computed(() => this.marks().length);
 
-  private jumpList: LogicalCoordinate[] | null = null;
-  private jumpIndex = 0;
-  private edgesToSort: LogicalCoordinate[] = [];
-  private edgesHash: number | null = null;
+  private jumpList = new JumpList(this.mapService, this.debugService);
+  private markedJumpList = new JumpList(this.mapService, this.debugService);
 
   constructor() {
     effect(() => this.render());
     effect(() => {
-      const edges = this.edges();
-      const hash = hashList(edges.map(tileMapKey));
-      if (this.edgesHash === hash) {
-        return;
-      }
-      this.edgesToSort = edges;
-      this.jumpList = null;
-      this.edgesHash = hash;
+      this.jumpList.setEdges(this.edges());
+      this.markedJumpList.setEdges(this.marks());
     });
   }
 
@@ -82,58 +139,17 @@ export class SummaryItemComponent {
   }
 
   public onMouseDown(event: MouseEvent) {
+    const jumpList = event.shiftKey ? this.markedJumpList : this.jumpList;
     switch (event.button) {
       case 0:
-        this.cycleItems(1);
+        jumpList.cycleItems(1);
         break;
       case 1:
-        this.cycleItems(0);
+        jumpList.cycleItems(0);
         break;
       case 2:
-        this.cycleItems(-1);
+        jumpList.cycleItems(-1);
         break;
     }
-  }
-
-  private cycleItems(direction: number) {
-    const isCalculated = this.calculateJumpList();
-    // jumpList cannot be null, but we have to make TypeScript happy.
-    if (this.jumpList === null || this.jumpList.length === 0) {
-      return;
-    }
-
-    if (!isCalculated) {
-      this.jumpIndex =
-        (this.jumpIndex + direction + this.jumpList.length) %
-        this.jumpList.length;
-    }
-
-    this.debugService.summaryTrace.set(this.jumpList);
-    this.debugService.summaryTraceIndex.set(this.jumpIndex);
-
-    const coord = this.jumpList[this.jumpIndex];
-    this.mapService.displayPosition.update((dp) => {
-      const physical = dp.screen2Physical(logical2Screen(coord));
-      return new DisplayPosition(
-        dp.offset.sub(physical).add(this.mapService.getWindowSize().div(2)),
-        dp.zoomLevel,
-      );
-    });
-  }
-
-  private calculateJumpList(): boolean {
-    if (this.jumpList !== null) {
-      return false;
-    }
-
-    const currentPosition = this.mapService
-      .displayPosition()
-      .physical2Screen(this.mapService.getWindowSize().div(2));
-
-    this.jumpList = twoOptJumpList(this.edgesToSort, currentPosition);
-    this.jumpIndex = 0;
-    this.edgesToSort = [];
-
-    return true;
   }
 }

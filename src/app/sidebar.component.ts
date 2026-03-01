@@ -15,7 +15,7 @@ import { SummaryItemComponent } from './summary-item.component';
 
 type SummaryItem = {
   edges: LogicalCoordinate[];
-  marks: number;
+  marks: LogicalCoordinate[];
 };
 
 @Component({
@@ -117,7 +117,7 @@ export class SidebarComponent {
   private calculateSummary(): SummaryItem[] {
     const result: SummaryItem[] = [];
     for (let i = 0; i < 6; ++i) {
-      result.push({ edges: [], marks: 0 });
+      result.push({ edges: [], marks: [] });
     }
 
     if (!this.mapService.candidate().isComplete()) {
@@ -134,7 +134,7 @@ export class SidebarComponent {
       const item = result[edge.item.all - 1];
       item.edges.push(edge.coordinate);
       if (marks.has(tileMapKey(edge.coordinate))) {
-        ++item.marks;
+        item.marks.push(edge.coordinate);
       }
     }
     return result;
