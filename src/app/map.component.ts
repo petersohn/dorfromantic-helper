@@ -208,7 +208,11 @@ export class MapComponent implements OnInit {
 
     canvas.width = size.x;
     canvas.height = size.y;
-    ctx.fillStyle = isCandidateComplete ? '#fff' : '#ccc';
+    ctx.fillStyle = this.mapService.flashing()
+      ? '#faa'
+      : isCandidateComplete
+        ? '#fff'
+        : '#ccc';
     ctx.fillRect(0, 0, size.x, size.y);
 
     for (const mark of marks) {

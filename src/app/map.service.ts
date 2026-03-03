@@ -94,6 +94,16 @@ export class MapService {
 
   private windowSize: PhysicalCoordinate | null = null;
 
+  private flashing_ = signal<boolean>(false);
+  public flashing = computed(() => this.flashing_());
+
+  public flashScreen(): void {
+    this.flashing_.set(true);
+    setTimeout(() => {
+      this.flashing_.set(false);
+    }, 100);
+  }
+
   public setWindowSize(size: PhysicalCoordinate) {
     this.windowSize = size;
   }

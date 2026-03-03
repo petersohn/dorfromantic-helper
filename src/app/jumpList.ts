@@ -35,9 +35,16 @@ export class JumpList {
     }
 
     if (!isCalculated) {
+      const oldIndex = this.jumpIndex;
       this.jumpIndex =
         (this.jumpIndex + direction + this.jumpList.length) %
         this.jumpList.length;
+
+      if (
+        direction > 0 ? this.jumpIndex < oldIndex : this.jumpIndex > oldIndex
+      ) {
+        this.mapService.flashScreen();
+      }
     }
 
     this.debugService.summaryTrace.set(this.jumpList);
