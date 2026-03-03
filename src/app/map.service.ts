@@ -31,6 +31,11 @@ interface Match {
   to: TileType;
 }
 
+interface HistoryItem {
+  coordinate: LogicalCoordinate;
+  hadMark: boolean;
+}
+
 @Injectable()
 export class MapService {
   constructor() {
@@ -75,7 +80,7 @@ export class MapService {
   public readonly tiles = computed(() => this.tiles_());
   public readonly edges = computed(() => this.getEdges());
 
-  private history: string[] = [];
+  private history: HistoryItem[] = [];
   private candidateHistory: Tile[] = [];
 
   private canUndoPlacement_ = signal<boolean>(false);
@@ -182,12 +187,12 @@ export class MapService {
 
     const key = tileMapKey(coordinate);
     this.tileMap.set(key, { coordinate, item: c });
-    this.history.push(key);
+    const hadMark = this.removeMark_(coordinate);
+    this.history.push({ coordinate, hadMark });
     this.popCandidate();
     this.updateTiles();
     this.updateCanUndoPlacement();
 
-    this.removeMark_(coordinate);
     this.candidateHistory = [];
     this.updateCanUndoTile();
 
@@ -200,15 +205,20 @@ export class MapService {
   }
 
   public undoPlacement(): void {
-    const key = this.history.pop();
-    if (!key) {
+    const item = this.history.pop();
+    if (!item) {
       return;
     }
 
+    const key = tileMapKey(item.coordinate);
     const last = this.tileMap.get(key);
     if (last) {
       this.tileMap.delete(key);
       this.pushCandidate(last.item);
+    }
+
+    if (item.hadMark) {
+      this.addMark(item.coordinate);
     }
 
     this.updateCanUndoPlacement();
