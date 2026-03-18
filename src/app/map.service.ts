@@ -286,6 +286,7 @@ export class MapService {
         coordinate: t.coordinate,
         item: t.item.serialize(),
       })),
+      history: this.history,
       marks: this.marks(),
     };
     return JSON.stringify(data);
@@ -337,7 +338,17 @@ export class MapService {
       }
     }
 
-    this.history = [];
+    const history = data.history ?? [];
+    for (const item of history) {
+      if (!this.is_coordinate(item.coordinate)) {
+        throw new Error('Bad input');
+      }
+      if (item.hadMark !== undefined && typeof item.hadMark !== 'boolean') {
+        throw new Error('Bad input');
+      }
+    }
+
+    this.history = history;
     this.candidateStack = [];
     this.updateCanUndoPlacement();
 
