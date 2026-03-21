@@ -17,6 +17,7 @@ import {
   LogicalItem,
   PhysicalItem,
   Tile,
+  UndoHighlight,
 } from './mapTypes';
 import {
   drawEdge,
@@ -25,6 +26,7 @@ import {
   logical2Screen,
   screen2Logical,
   drawMark,
+  drawUndoHighlight,
 } from './drawHelper';
 import { DisplayPosition } from './displayPosition';
 import { MapService } from './map.service';
@@ -182,6 +184,7 @@ export class MapComponent implements OnInit {
       this.mapService.marks(),
       this.candidateShow(),
       this.mapService.candidate().isComplete(),
+      this.mapService.undoHighlight(),
     );
   }
 
@@ -197,6 +200,7 @@ export class MapComponent implements OnInit {
     marks: LogicalCoordinate[],
     candidateShow: LogicalItem<Tile> | null,
     isCandidateComplete: boolean,
+    undoHighlight: UndoHighlight | null,
   ) {
     const ctx = canvas.getContext('2d');
     if (!ctx) {
@@ -263,6 +267,23 @@ export class MapComponent implements OnInit {
       ctx.globalAlpha = 0.7;
       drawTile(ctx, candidateShow.item, center, displayPosition.zoom());
       ctx.globalAlpha = 1.0;
+    }
+
+    if (undoHighlight) {
+      const elapsed = performance.now() - undoHighlight.startTime;
+      const duration = 3000;
+      if (elapsed < duration) {
+        const opacity = 1 - elapsed / duration;
+        const center = displayPosition.screen2Physical(
+          logical2Screen(undoHighlight.coordinate),
+        );
+        if (shouldDraw(size, center, displayPosition.zoom())) {
+          drawUndoHighlight(ctx, center, displayPosition.zoom(), opacity);
+        }
+        requestAnimationFrame(() => this.render());
+      } else {
+        this.mapService.clearUndoHighlight();
+      }
     }
 
     if (this.debugService.showDebug()) {

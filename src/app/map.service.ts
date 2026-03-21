@@ -9,6 +9,7 @@ import {
   Tile,
   TileType,
   tileTypes,
+  UndoHighlight,
 } from './mapTypes';
 import { logical2Screen } from './drawHelper';
 
@@ -102,6 +103,9 @@ export class MapService {
 
   private flashing_ = signal<boolean>(false);
   public flashing = computed(() => this.flashing_());
+
+  private undoHighlight_ = signal<UndoHighlight | null>(null);
+  public undoHighlight = computed(() => this.undoHighlight_());
 
   public flashScreen(): void {
     this.flashing_.set(true);
@@ -232,6 +236,11 @@ export class MapService {
       this.addMark(item.coordinate);
     }
 
+    this.undoHighlight_.set({
+      coordinate: item.coordinate,
+      startTime: performance.now(),
+    });
+
     if (jump) {
       this.moveToPosition(logical2Screen(item.coordinate));
     }
@@ -241,6 +250,10 @@ export class MapService {
     this.updateCanUndoTile();
     this.updateTiles();
     this.saveGame();
+  }
+
+  public clearUndoHighlight(): void {
+    this.undoHighlight_.set(null);
   }
 
   public undoTile(): void {

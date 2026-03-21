@@ -195,6 +195,11 @@ export interface ItemBase<T, CoordinateType> {
 export type LogicalItem<T> = ItemBase<T, LogicalCoordinate>;
 export type PhysicalItem<T> = ItemBase<T, PhysicalCoordinate>;
 
+export interface UndoHighlight {
+  coordinate: LogicalCoordinate;
+  startTime: number;
+}
+
 export type TileConfig = {
   displayName: string;
   normal: boolean;

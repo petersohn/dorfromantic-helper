@@ -165,3 +165,18 @@ export function drawMark(
   drawOutline(ctx, vertices);
   ctx.fill();
 }
+
+export function drawUndoHighlight(
+  ctx: CanvasRenderingContext2D,
+  center: PhysicalCoordinate,
+  radius: number,
+  opacity: number,
+) {
+  const vertices = getVertices(center, radius);
+  ctx.beginPath();
+  ctx.globalAlpha = opacity;
+  ctx.fillStyle = '#ff0';
+  drawOutline(ctx, vertices);
+  ctx.fill();
+  ctx.globalAlpha = 1;
+}
