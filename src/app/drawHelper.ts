@@ -161,6 +161,7 @@ export function drawMark(
   radius: number,
 ) {
   const vertices = getVertices(center, radius);
+  ctx.beginPath();
   ctx.fillStyle = '#faa';
   drawOutline(ctx, vertices);
   ctx.fill();
