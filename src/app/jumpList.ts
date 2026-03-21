@@ -51,13 +51,7 @@ export class JumpList {
     this.debugService.summaryTraceIndex.set(this.jumpIndex);
 
     const coord = this.jumpList[this.jumpIndex];
-    this.mapService.displayPosition.update((dp) => {
-      const physical = dp.screen2Physical(logical2Screen(coord));
-      return new DisplayPosition(
-        dp.offset.sub(physical).add(this.mapService.getWindowSize().div(2)),
-        dp.zoomLevel,
-      );
-    });
+    this.mapService.moveToPosition(logical2Screen(coord));
   }
 
   private calculate(): boolean {

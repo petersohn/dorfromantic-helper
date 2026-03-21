@@ -64,8 +64,8 @@ export class SidebarComponent {
     this.mapService.fillTile(type);
   }
 
-  public undoPlacement() {
-    this.mapService.undoPlacement();
+  public undoPlacement(event: MouseEvent) {
+    this.mapService.undoPlacement(!event.shiftKey);
   }
 
   public undoTile() {

@@ -10,6 +10,7 @@ import {
   TileType,
   tileTypes,
 } from './mapTypes';
+import { logical2Screen } from './drawHelper';
 
 export function tileMapKey(c: LogicalCoordinate) {
   return `${c.x},${c.y}`;
@@ -165,6 +166,16 @@ export class MapService {
     this.updateMarks();
   }
 
+  public moveToPosition(screen: PhysicalCoordinate) {
+    this.displayPosition.update((dp) => {
+      const physical = dp.screen2Physical(screen);
+      return new DisplayPosition(
+        dp.offset.sub(physical).add(this.getWindowSize().div(2)),
+        dp.zoomLevel,
+      );
+    });
+  }
+
   public canAddCandidate(
     coordinate: LogicalCoordinate,
     checkValidity: boolean,
@@ -204,7 +215,7 @@ export class MapService {
     this.candidate_.update((c) => c.rotate(amount));
   }
 
-  public undoPlacement(): void {
+  public undoPlacement(jump: boolean): void {
     const item = this.history.pop();
     if (!item) {
       return;
@@ -219,6 +230,10 @@ export class MapService {
 
     if (item.hadMark) {
       this.addMark(item.coordinate);
+    }
+
+    if (jump) {
+      this.moveToPosition(logical2Screen(item.coordinate));
     }
 
     this.updateCanUndoPlacement();

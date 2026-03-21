@@ -52,7 +52,7 @@
 </div>
 
 <div class="menu">
-  <button [disabled]="!canUndoPlacement()" (click)="undoPlacement()">
+  <button [disabled]="!canUndoPlacement()" (click)="undoPlacement($event)">
     Undo placement
   </button>
   <button (click)="resetGame()">Reset game</button>
